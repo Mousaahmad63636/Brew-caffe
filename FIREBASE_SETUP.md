@@ -57,6 +57,7 @@ NEXTAUTH_SECRET=generate-a-32-character-secret-key
 ## Step 5: Set Firestore Security Rules
 
 1. In Firebase Console → Firestore Database → Rules tab
+
 2. Replace existing rules with:
 
 ```javascript
