@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // experimental: {},
+  transpilePackages: ["firebase"],
   images: {
     domains: ['firebasestorage.googleapis.com'],
     unoptimized: false,
