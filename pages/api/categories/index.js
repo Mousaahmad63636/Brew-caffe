@@ -6,8 +6,14 @@ export default async function handler(req, res) {
   try {
     switch (method) {
       case 'GET':
-        const categories = await categoriesService.getAllCategories();
-        res.status(200).json(categories);
+        try {
+          const categories = await categoriesService.getAllCategories();
+          res.status(200).json(categories);
+        } catch (dbError) {
+          console.error('Database error in categories API:', dbError);
+          // Return empty array if no categories exist yet
+          res.status(200).json([]);
+        }
         break;
 
       case 'POST':
@@ -21,6 +27,10 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Categories API error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }

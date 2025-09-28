@@ -29,18 +29,19 @@ export const categoriesService = {
   async getAllCategories() {
     try {
       const db = getFirestoreDb();
-      const snapshot = await db.collection(CATEGORIES_COLLECTION)
-        .where('active', '==', true)
-        .orderBy('order', 'asc')
-        .get();
+      const snapshot = await db.collection(CATEGORIES_COLLECTION).get();
       
       const categories = [];
       snapshot.forEach(doc => {
+        const data = doc.data();
         categories.push({
           id: doc.id,
-          ...doc.data()
+          ...data
         });
       });
+      
+      // Sort by order field, defaulting to 0 if not set
+      categories.sort((a, b) => (a.order || 0) - (b.order || 0));
       
       return categories;
     } catch (error) {

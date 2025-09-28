@@ -23,15 +23,26 @@ export default function Categories() {
     try {
       setIsLoading(true);
       const response = await fetch('/api/categories');
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch categories');
+        // If categories API fails, provide empty array and specific error
+        if (response.status === 500) {
+          console.warn('Categories API returned 500, starting with empty categories');
+          setCategories([]);
+          setError('Categories service unavailable. You can still create new categories.');
+          return;
+        }
+        throw new Error(`Failed to fetch categories: ${response.status}`);
       }
+      
       const data = await response.json();
-      setCategories(data);
+      setCategories(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err) {
       console.error('Error loading categories:', err);
-      setError('Failed to load categories');
+      // Provide fallback empty state instead of failing completely
+      setCategories([]);
+      setError('Failed to load categories. Starting with empty list.');
     } finally {
       setIsLoading(false);
     }
