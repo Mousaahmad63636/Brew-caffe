@@ -1,25 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ImageUpload from '../ImageUpload';
-import { menuData } from '../../data/menuData';
+import { getCategoryOptions } from '../../services/menuService';
 
 export default function MenuItemForm({ initialData, onSubmit, isSubmitting }) {
-  // Get all categories and subcategories for dropdown
-  const getCategoryOptions = () => {
-    const options = [];
-    menuData.mainCategories.forEach(mainCat => {
-      mainCat.subcategories.forEach(subCat => {
-        options.push({
-          value: `${mainCat.id}-${subCat.id}`,
-          label: `${mainCat.name} > ${subCat.name}`,
-          mainCategory: mainCat.id,
-          subCategory: subCat.id
-        });
-      });
-    });
-    return options;
-  };
-
-  const categoryOptions = getCategoryOptions();
+  // State for dynamic category options
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  
+  // Load categories on component mount
+  useEffect(() => {
+    const loadCategoryOptions = async () => {
+      try {
+        setLoadingCategories(true);
+        const options = await getCategoryOptions();
+        setCategoryOptions(options);
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+        setCategoryOptions([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    
+    loadCategoryOptions();
+  }, []);
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     description: initialData?.description || '',
@@ -112,11 +116,14 @@ export default function MenuItemForm({ initialData, onSubmit, isSubmitting }) {
             name="category"
             value={formData.category}
             onChange={handleChange}
+            disabled={loadingCategories}
             className={`mt-1 block w-full rounded-md ${
               errors.category ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-menu-gray-300 focus:border-menu-accent-500 focus:ring-menu-accent-500'
-            } shadow-sm sm:text-sm`}
+            } shadow-sm sm:text-sm disabled:opacity-50`}
           >
-            <option value="">Select a category...</option>
+            <option value="">
+              {loadingCategories ? 'Loading categories...' : 'Select a category...'}
+            </option>
             {categoryOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
