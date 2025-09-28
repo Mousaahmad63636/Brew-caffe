@@ -106,21 +106,21 @@ export default function AddItemBackup() {
             }}
           >
             <option value="">Select a category...</option>
-            <option value="pizza-margherita">Pizza > Margherita Pizzas</option>
-            <option value="pizza-specialty">Pizza > Specialty Pizzas</option>
-            <option value="pizza-white">Pizza > White Pizzas</option>
-            <option value="pizza-vegan">Pizza > Vegan Pizzas</option>
-            <option value="beverages-hot">Beverages > Hot Drinks</option>
-            <option value="beverages-cold">Beverages > Cold Drinks</option>
-            <option value="beverages-wines">Beverages > Wines & Spirits</option>
-            <option value="pasta-spaghetti">Pasta > Spaghetti</option>
-            <option value="pasta-penne">Pasta > Penne</option>
-            <option value="pasta-ravioli">Pasta > Ravioli</option>
-            <option value="burgers-classic">Burgers > Classic Burgers</option>
-            <option value="burgers-gourmet">Burgers > Gourmet Burgers</option>
-            <option value="burgers-chicken">Burgers > Chicken Burgers</option>
-            <option value="burgers-veggie">Burgers > Veggie & Vegan Burgers</option>
-            <option value="salad-salads">Salad > Salads</option>
+            <option value="pizza-margherita">Pizza &gt; Margherita Pizzas</option>
+            <option value="pizza-specialty">Pizza &gt; Specialty Pizzas</option>
+            <option value="pizza-white">Pizza &gt; White Pizzas</option>
+            <option value="pizza-vegan">Pizza &gt; Vegan Pizzas</option>
+            <option value="beverages-hot">Beverages &gt; Hot Drinks</option>
+            <option value="beverages-cold">Beverages &gt; Cold Drinks</option>
+            <option value="beverages-wines">Beverages &gt; Wines &amp; Spirits</option>
+            <option value="pasta-spaghetti">Pasta &gt; Spaghetti</option>
+            <option value="pasta-penne">Pasta &gt; Penne</option>
+            <option value="pasta-ravioli">Pasta &gt; Ravioli</option>
+            <option value="burgers-classic">Burgers &gt; Classic Burgers</option>
+            <option value="burgers-gourmet">Burgers &gt; Gourmet Burgers</option>
+            <option value="burgers-chicken">Burgers &gt; Chicken Burgers</option>
+            <option value="burgers-veggie">Burgers &gt; Veggie &amp; Vegan Burgers</option>
+            <option value="salad-salads">Salad &gt; Salads</option>
           </select>
         </div>
         

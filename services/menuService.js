@@ -6,6 +6,18 @@ const transformMenuData = async (apiItems) => {
     // Fetch dynamic categories from Firestore
     const categories = await categoriesService.getAllCategories();
     
+    // If no categories exist, return empty structure
+    if (categories.length === 0) {
+      return {
+        restaurant: {
+          name: "Brew & Crepe",
+          description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
+          location: "Downtown District"
+        },
+        mainCategories: []
+      };
+    }
+    
     // Group menu items by category
     const categorizedItems = apiItems.reduce((acc, item) => {
       const category = item.category || 'Other';
@@ -60,22 +72,17 @@ const transformMenuData = async (apiItems) => {
     // Sort categories by order
     mainCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    // Filter out categories with no subcategories or items
-    const categoriesWithContent = mainCategories.filter(cat => 
-      cat.subcategories && cat.subcategories.length > 0
-    );
-
     return {
       restaurant: {
         name: "Brew & Crepe",
         description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
         location: "Downtown District"
       },
-      mainCategories: categoriesWithContent
+      mainCategories: mainCategories
     };
   } catch (error) {
     console.error('Error transforming menu data:', error);
-    // Return basic structure on error
+    // Return empty structure on error
     return {
       restaurant: {
         name: "Brew & Crepe",

@@ -10,7 +10,8 @@
     "migrate-categories": "node scripts/migrate-categories.js",
     "test-categories": "node scripts/test-categories.js",
     "test-firebase": "node test-firebase.js",
-    "test-dynamic-integration": "node scripts/test-dynamic-integration.js"
+    "test-dynamic-integration": "node scripts/test-dynamic-integration.js",
+    "clear-categories": "node scripts/clear-categories.js"
   },
   "dependencies": {
     "firebase": "^10.7.1",

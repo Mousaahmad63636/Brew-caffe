@@ -105,6 +105,46 @@ export default function Menu() {
     );
   }
 
+  // Empty state - no categories created yet
+  if (!menuData.mainCategories || menuData.mainCategories.length === 0) {
+    return (
+      <>
+        <Head>
+          <title>{menuData.restaurant.name} - Mobile Menu</title>
+          <meta name="description" content={menuData.restaurant.description} />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        </Head>
+        
+        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+          <MenuHeader restaurant={menuData.restaurant} />
+          
+          <div className="flex items-center justify-center min-h-[60vh] px-6">
+            <div className="text-center max-w-md mx-auto">
+              <div className="text-8xl mb-6">🍽️</div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                Welcome to {menuData.restaurant.name}!
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Our delicious menu is being carefully crafted. 
+                Please check back soon for our amazing offerings!
+              </p>
+              <div className="bg-orange-100 border border-orange-200 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-orange-800 mb-2">🚀 Coming Soon:</h3>
+                <p className="text-orange-700 text-sm">
+                  Fresh ingredients, authentic flavors, and memorable dining experiences.
+                </p>
+              </div>
+              <div className="text-sm text-gray-500">
+                <p className="mb-2">📍 {menuData.restaurant.location}</p>
+                <p>{menuData.restaurant.description}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Head>
