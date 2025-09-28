@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AdminLayout from '../../components/AdminLayout';
 import ItemForm from '../../components/ItemForm';
-import { createMenuItem } from '../../services/menuItemsService';
 
 export default function AddMenuItem() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,7 +16,18 @@ export default function AddMenuItem() {
     setSuccess(false);
     
     try {
-      await createMenuItem(formData);
+      const response = await fetch('/api/menu-items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create menu item');
+      }
+      
       setSuccess(true);
       
       // Brief success display before redirect

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../../components/AdminLayout';
-import { categoriesService } from '../../services/categoriesService';
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -23,7 +22,11 @@ export default function Categories() {
   const loadCategories = async () => {
     try {
       setIsLoading(true);
-      const data = await categoriesService.fetchCategories();
+      const response = await fetch('/api/categories');
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+      const data = await response.json();
       setCategories(data);
       setError(null);
     } catch (err) {
@@ -39,9 +42,27 @@ export default function Categories() {
     
     try {
       if (editingCategory) {
-        await categoriesService.updateCategory(editingCategory.id, formData);
+        const response = await fetch(`/api/categories/${editingCategory.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to update category');
+        }
       } else {
-        await categoriesService.createCategory(formData);
+        const response = await fetch('/api/categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to create category');
+        }
       }
       
       await loadCategories();
@@ -55,7 +76,12 @@ export default function Categories() {
   const handleDelete = async (id, name) => {
     if (window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
       try {
-        await categoriesService.deleteCategory(id);
+        const response = await fetch(`/api/categories/${id}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete category');
+        }
         await loadCategories();
       } catch (err) {
         console.error('Error deleting category:', err);

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ImageUpload from './ImageUpload';
-import { getCategoryOptions } from '../services/menuService';
 
 export default function ItemForm({ initialData, onSubmit, isSubmitting, isEditing = false }) {
   // State for dynamic category options
@@ -13,7 +12,25 @@ export default function ItemForm({ initialData, onSubmit, isSubmitting, isEditin
     const loadCategoryOptions = async () => {
       try {
         setLoadingCategories(true);
-        const options = await getCategoryOptions();
+        const response = await fetch('/api/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const categories = await response.json();
+        
+        // Transform categories to options format
+        const options = [];
+        categories.forEach(mainCat => {
+          (mainCat.subcategories || []).forEach(subCat => {
+            options.push({
+              value: `${mainCat.id}-${subCat.id}`,
+              label: `${mainCat.name} > ${subCat.name}`,
+              mainCategory: mainCat.id,
+              subCategory: subCat.id
+            });
+          });
+        });
+        
         setCategoryOptions(options);
       } catch (error) {
         console.error('Failed to load categories:', error);

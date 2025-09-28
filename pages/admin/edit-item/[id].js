@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import AdminLayout from '../../../components/AdminLayout';
 import ItemForm from '../../../components/ItemForm';
-import { fetchMenuItem, updateMenuItem } from '../../../services/menuItemsService';
 
 export default function EditItem() {
   const [item, setItem] = useState(null);
@@ -17,7 +16,11 @@ export default function EditItem() {
     
     async function loadItem() {
       try {
-        const data = await fetchMenuItem(id);
+        const response = await fetch(`/api/menu-items/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch menu item');
+        }
+        const data = await response.json();
         setItem(data);
       } catch (err) {
         console.error('Error loading item:', err);
@@ -35,7 +38,18 @@ export default function EditItem() {
     setError(null);
     
     try {
-      await updateMenuItem(id, formData);
+      const response = await fetch(`/api/menu-items/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update menu item');
+      }
+      
       router.push('/admin/menu-items');
     } catch (err) {
       console.error('Error updating item:', err);

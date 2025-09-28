@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import AdminLayout from '../../components/AdminLayout';
-import { fetchMenuItems, deleteMenuItem } from '../../services/menuItemsService';
 
 export default function MenuItems() {
   const [items, setItems] = useState([]);
@@ -24,7 +23,11 @@ export default function MenuItems() {
   const loadItems = async () => {
     try {
       setIsLoading(true);
-      const data = await fetchMenuItems();
+      const response = await fetch('/api/menu-items');
+      if (!response.ok) {
+        throw new Error('Failed to fetch menu items');
+      }
+      const data = await response.json();
       setItems(data);
       setError(null);
     } catch (err) {
@@ -56,7 +59,12 @@ export default function MenuItems() {
 
   const handleDelete = async (id, name) => {
     try {
-      await deleteMenuItem(id);
+      const response = await fetch(`/api/menu-items/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete menu item');
+      }
       setItems(items.filter(item => item.id !== id));
       setDeleteConfirm(null);
     } catch (err) {
