@@ -1,4 +1,4 @@
-import { getFirestoreDb } from '../lib/firebase';
+import { getFirestoreDb } from '../../lib/firebase';
 
 const CATEGORIES_COLLECTION = 'categories';
 
