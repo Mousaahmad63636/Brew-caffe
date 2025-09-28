@@ -115,7 +115,7 @@ export const getCategoryOptions = async () => {
 export const fetchMenuData = async (useStaticData = false) => {
   // Static data option for backward compatibility
   if (useStaticData) {
-    const { menuData } = await import('../data/menuData');
+    const { menuData } = require('../data/menuData');
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(menuData);
@@ -135,7 +135,7 @@ export const fetchMenuData = async (useStaticData = false) => {
   } catch (error) {
     // Fallback to static data if API fails
     console.warn('API failed, using static data:', error.message);
-    const { menuData } = await import('../data/menuData');
+    const { menuData } = require('../data/menuData');
     return menuData;
   }
 };
