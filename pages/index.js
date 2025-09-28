@@ -4,7 +4,6 @@ import MenuHeader from '../components/MenuHeader';
 import MainCategoryNav from '../components/MainCategoryNav';
 import SubcategorySlider from '../components/SubcategorySlider';
 import MenuCategory from '../components/MenuCategory';
-import { fetchMenuData } from '../services/menuService';
 
 export default function Menu() {
   const [activeMainCategory, setActiveMainCategory] = useState('');
@@ -19,8 +18,15 @@ export default function Menu() {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await fetchMenuData();
+        
+        const response = await fetch('/api/menu');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch menu: ${response.status}`);
+        }
+        
+        const data = await response.json();
         setMenuData(data);
+        
         // Set the first main category and its first subcategory as active by default
         if (data.mainCategories && data.mainCategories.length > 0) {
           const firstMainCategory = data.mainCategories[0];
