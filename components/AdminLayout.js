@@ -36,6 +36,9 @@ export default function AdminLayout({ children, title }) {
                     <Link href="/admin/dashboard" className="text-white hover:bg-menu-accent-500 px-3 py-2 rounded-md text-sm font-medium">
                         Dashboard
                     </Link>
+                    <Link href="/admin/categories" className="text-white hover:bg-menu-accent-500 px-3 py-2 rounded-md text-sm font-medium">
+                        Categories
+                    </Link>
                     <Link href="/admin/menu-items" className="text-white hover:bg-menu-accent-500 px-3 py-2 rounded-md text-sm font-medium">
                         Menu Items
                     </Link>
@@ -78,6 +81,9 @@ export default function AdminLayout({ children, title }) {
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                 <Link href="/admin/dashboard" className="text-white hover:bg-menu-accent-500 block px-3 py-2 rounded-md text-base font-medium">
                     Dashboard
+                </Link>
+                <Link href="/admin/categories" className="text-white hover:bg-menu-accent-500 block px-3 py-2 rounded-md text-base font-medium">
+                    Categories
                 </Link>
                 <Link href="/admin/menu-items" className="text-white hover:bg-menu-accent-500 block px-3 py-2 rounded-md text-base font-medium">
                     Menu Items

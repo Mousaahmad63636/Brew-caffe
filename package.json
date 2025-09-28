@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate-categories": "node scripts/migrate-categories.js",
+    "test-categories": "node scripts/test-categories.js",
+    "test-firebase": "node test-firebase.js"
   },
   "dependencies": {
     "firebase": "^10.7.1",
