@@ -1,6 +1,6 @@
 export const menuData = {
   restaurant: {
-    name: "IL SOGNO Resto",
+    name: "Brew & Crepe",
     description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
     location: "Downtown District"
   },
