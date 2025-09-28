@@ -1,0 +1,183 @@
+DA-MENUUU-BREW PROJECT INDEX
+=====================================
+
+PROJECT ROOT: C:\Users\Ahmad\Desktop\Da-menuuu-brew\
+
+ROOT LEVEL FILES:
+├── .env.local                    # Environment variables (local)
+├── .env.local.example           # Environment template
+├── .gitignore                   # Git ignore rules
+├── package.json                 # Node.js dependencies
+├── package-lock.json           # Dependency lock file
+├── next.config.js              # Next.js configuration
+├── postcss.config.js           # PostCSS configuration
+├── tailwind.config.js          # TailwindCSS configuration
+├── README.md                   # Main project documentation
+├── ADMIN-README.md             # Admin-specific documentation
+├── CATEGORIES-DATABASE.md      # Categories database guide
+├── CATEGORY-MANAGEMENT-GUIDE.md # Category management documentation
+├── DYNAMIC-CATEGORIES-COMPLETE.md # Dynamic categories guide
+├── FIREBASE-AUTH-SETUP.md      # Firebase auth setup guide
+├── FIREBASE-MIGRATION.md       # Firebase migration guide
+├── FRESH-START-GUIDE.md        # Fresh start instructions
+├── TROUBLESHOOT-404.md         # 404 troubleshooting guide
+├── test-firebase.js            # Firebase test script
+├── patches.json                # Package patches
+└── New Text Document.txt       # Temporary text file
+
+BATCH SCRIPTS:
+├── cleanup-deps.bat            # Clean dependencies
+├── fix-404-errors.bat          # Fix 404 errors
+├── fresh-start.bat             # Fresh project start
+├── install-admin-deps.bat      # Install admin dependencies
+├── install-firebase.bat        # Install Firebase
+├── quick-start.bat             # Quick project start
+├── run-dev.bat                 # Run development server
+├── setup-categories-db.bat     # Setup categories database
+├── setup-firebase.bat          # Setup Firebase
+├── start-brew-caffe.bat        # Start brew cafe
+├── start.bat                   # General start script
+├── test-categories-ui.bat      # Test categories UI
+├── test-complete-system.bat    # Test complete system
+├── validate-setup.bat          # Validate setup
+└── verify-setup.bat            # Verify setup
+
+COMPONENTS DIRECTORY: /components/
+├── AdminLayout.js              # Admin layout wrapper
+├── AuthGuard.js                # Authentication guard component
+├── CategoryCards.js            # Category card display
+├── CategorySlider.js           # Category slider component
+├── CategoryTitle.js            # Category title display
+├── CompactCategoryNav.js       # Compact category navigation
+├── ImageUpload.js              # Image upload component
+├── ItemForm.js                 # Menu item form component
+├── MainCategoryNav.js          # Main category navigation
+├── MenuCategory.js             # Menu category component
+├── MenuHeader.js               # Menu header component
+├── MenuItem.js                 # Individual menu item
+├── MenuNav.js                  # Menu navigation
+├── MenuSection.js              # Menu section component
+└── SubcategorySlider.js        # Subcategory slider
+
+ADMIN COMPONENTS: /components/admin/
+├── CreateUser.js               # User creation component
+├── Layout.js                   # Admin layout component
+└── MenuItemForm.js             # Admin menu item form
+
+PAGES DIRECTORY: /pages/
+├── index.js                    # Home page (public menu)
+├── login.js                    # Login page
+└── _app.js                     # Next.js app wrapper
+
+ADMIN PAGES: /pages/admin/
+├── add-item.js                 # Add menu item page
+├── add-item-backup.js          # Backup add item page
+├── categories.js               # Categories management
+├── dashboard.js                # Admin dashboard
+├── diagnostic.js               # System diagnostic page
+├── firebase-login.js           # Firebase login page
+├── index.js                    # Admin home page
+├── login.js                    # Admin login page
+├── menu-items.js               # Menu items management
+├── simple-add-item.js          # Simple add item form
+└── simple-categories.js        # Simple categories page
+
+EDIT ITEM PAGES: /pages/admin/edit-item/
+└── [id].js                     # Dynamic edit item page
+
+API ROUTES: /pages/api/
+└── migrate-menu-items.js       # Menu items migration API
+
+AUTH API: /pages/api/auth/
+└── [...nextauth].js            # NextAuth configuration
+
+MENU ITEMS API: /pages/api/menu-items/
+├── index.js                    # Menu items CRUD API
+└── [id].js                     # Individual menu item API
+
+SERVICES DIRECTORY: /services/
+├── categoriesService.js        # Categories data service
+├── firestoreService.js         # Firestore database service
+├── menuItemsService.js         # Menu items data service
+└── menuService.js              # Menu data service
+
+LIBRARY DIRECTORY: /lib/
+├── auth.js                     # Authentication utilities
+├── firebase.js                 # Firebase configuration
+├── firebaseClient.js           # Firebase client setup
+└── google-sheets.js.backup     # Google Sheets backup
+
+CONTEXTS DIRECTORY: /contexts/
+└── AuthContext.js              # Authentication context
+
+UTILITIES DIRECTORY: /utils/
+└── imageUtils.js               # Image utility functions
+
+DATA DIRECTORY: /data/
+└── menuData.js                 # Static menu data
+
+SCRIPTS DIRECTORY: /scripts/
+├── clear-categories.js         # Clear categories script
+├── migrate-categories.js       # Migrate categories script
+├── test-categories.js          # Test categories script
+└── test-dynamic-integration.js # Test dynamic integration
+
+STYLES DIRECTORY: /styles/
+└── globals.css                 # Global CSS styles
+
+SYSTEM DIRECTORIES:
+├── .git/                       # Git version control
+└── node_modules/               # Node.js dependencies
+
+=====================================
+PROJECT ARCHITECTURE SUMMARY:
+
+FRONTEND LAYER:
+- Next.js 14 Pages Router
+- React 18 components
+- TailwindCSS styling
+- Responsive design with horizontal sliders
+
+DATABASE LAYER:
+- Firebase Firestore
+- Real-time data sync
+- Hierarchical menu structure
+
+AUTHENTICATION LAYER:
+- Dual auth system (NextAuth + Firebase)
+- Protected admin routes
+- Auth guards and contexts
+
+SERVICE LAYER:
+- Abstract data operations
+- Firebase service integration
+- Menu data management
+
+ADMIN SYSTEM:
+- Protected dashboard
+- CRUD operations for menu items
+- Category management
+- User management
+
+PUBLIC INTERFACE:
+- Restaurant menu display
+- Category navigation
+- Mobile-responsive design
+- Smooth animations
+
+=====================================
+KEY FILE RELATIONSHIPS:
+
+NAVIGATION FLOW:
+MainCategoryNav.js → SubcategorySlider.js → MenuItem.js
+
+DATA FLOW:
+firestoreService.js → menuItemsService.js → Admin Components
+
+AUTH FLOW:
+AuthContext.js → AuthGuard.js → Admin Pages
+
+API FLOW:
+/pages/api/ → services/ → Firebase Firestore
+
+=====================================

@@ -1,577 +1,304 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import Head from 'next/head';
 import AdminLayout from '../../components/AdminLayout';
-import categoriesService from '../../services/categoriesService';
-import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Eye, 
-  EyeOff, 
-  ChevronDown, 
-  ChevronRight,
-  Save,
-  X,
-  Move,
-  Palette
-} from 'lucide-react';
+import { categoriesService } from '../../services/categoriesService';
 
-const COLOR_OPTIONS = [
-  { value: 'orange', label: 'Orange', color: 'bg-orange-500' },
-  { value: 'blue', label: 'Blue', color: 'bg-blue-500' },
-  { value: 'pink', label: 'Pink', color: 'bg-pink-500' },
-  { value: 'red', label: 'Red', color: 'bg-red-500' },
-  { value: 'green', label: 'Green', color: 'bg-green-500' },
-  { value: 'purple', label: 'Purple', color: 'bg-purple-500' },
-  { value: 'yellow', label: 'Yellow', color: 'bg-yellow-500' },
-  { value: 'indigo', label: 'Indigo', color: 'bg-indigo-500' }
-];
-
-export default function ManageCategories() {
+export default function Categories() {
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [expandedCategories, setExpandedCategories] = useState(new Set());
-  const [addingSubcategoryTo, setAddingSubcategoryTo] = useState(null);
-
-  // Form states
-  const [categoryForm, setCategoryForm] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     description: '',
-    color: 'orange',
-    order: 1
-  });
-
-  const [subcategoryForm, setSubcategoryForm] = useState({
-    name: '',
-    description: '',
-    order: 1
+    order: 0,
+    isActive: true
   });
 
   useEffect(() => {
     loadCategories();
   }, []);
 
-  // Auto-hide messages after 3 seconds
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => setSuccess(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
-
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => setError(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
-
   const loadCategories = async () => {
     try {
-      setLoading(true);
-      const data = await categoriesService.getAllCategories();
+      setIsLoading(true);
+      const data = await categoriesService.fetchCategories();
       setCategories(data);
+      setError(null);
     } catch (err) {
-      setError('Failed to load categories: ' + err.message);
+      console.error('Error loading categories:', err);
+      setError('Failed to load categories');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleCreateCategory = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await categoriesService.createCategory(categoryForm);
-      setSuccess('Category created successfully!');
-      setCategoryForm({ name: '', description: '', color: 'orange', order: 1 });
-      setShowAddCategory(false);
-      await loadCategories();
-    } catch (err) {
-      setError('Failed to create category: ' + err.message);
-    }
-  };
-
-  const handleUpdateCategory = async (categoryId, updates) => {
-    try {
-      await categoriesService.updateCategory(categoryId, updates);
-      setSuccess('Category updated successfully!');
-      setEditingCategory(null);
-      await loadCategories();
-    } catch (err) {
-      setError('Failed to update category: ' + err.message);
-    }
-  };
-
-  const handleDeleteCategory = async (categoryId, categoryName) => {
-    if (!confirm(`Are you sure you want to delete "${categoryName}"? This action cannot be undone.`)) {
-      return;
-    }
     
     try {
-      await categoriesService.deleteCategory(categoryId);
-      setSuccess('Category deleted successfully!');
+      if (editingCategory) {
+        await categoriesService.updateCategory(editingCategory.id, formData);
+      } else {
+        await categoriesService.createCategory(formData);
+      }
+      
       await loadCategories();
+      resetForm();
     } catch (err) {
-      setError('Failed to delete category: ' + err.message);
+      console.error('Error saving category:', err);
+      setError('Failed to save category');
     }
   };
 
-  const handleAddSubcategory = async (categoryId) => {
-    try {
-      await categoriesService.addSubcategory(categoryId, subcategoryForm);
-      setSuccess('Subcategory added successfully!');
-      setSubcategoryForm({ name: '', description: '', order: 1 });
-      setAddingSubcategoryTo(null);
-      await loadCategories();
-    } catch (err) {
-      setError('Failed to add subcategory: ' + err.message);
+  const handleDelete = async (id, name) => {
+    if (window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+      try {
+        await categoriesService.deleteCategory(id);
+        await loadCategories();
+      } catch (err) {
+        console.error('Error deleting category:', err);
+        setError('Failed to delete category');
+      }
     }
   };
 
-  const handleUpdateSubcategory = async (categoryId, subcategoryId, updates) => {
-    try {
-      await categoriesService.updateSubcategory(categoryId, subcategoryId, updates);
-      setSuccess('Subcategory updated successfully!');
-      await loadCategories();
-    } catch (err) {
-      setError('Failed to update subcategory: ' + err.message);
-    }
+  const startEdit = (category) => {
+    setEditingCategory(category);
+    setFormData({
+      name: category.name,
+      description: category.description || '',
+      order: category.order || 0,
+      isActive: category.isActive !== false
+    });
+    setShowAddForm(true);
   };
 
-  const handleDeleteSubcategory = async (categoryId, subcategoryId, subcategoryName) => {
-    if (!confirm(`Are you sure you want to delete "${subcategoryName}"?`)) {
-      return;
-    }
-    
-    try {
-      await categoriesService.removeSubcategory(categoryId, subcategoryId);
-      setSuccess('Subcategory deleted successfully!');
-      await loadCategories();
-    } catch (err) {
-      setError('Failed to delete subcategory: ' + err.message);
-    }
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      order: 0,
+      isActive: true
+    });
+    setEditingCategory(null);
+    setShowAddForm(false);
   };
 
-  const toggleCategoryExpansion = (categoryId) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId);
-    } else {
-      newExpanded.add(categoryId);
-    }
-    setExpandedCategories(newExpanded);
-  };
-
-  const getColorClasses = (color) => {
-    const colorMap = {
-      orange: 'bg-orange-500 text-white border-orange-500',
-      blue: 'bg-blue-500 text-white border-blue-500',
-      pink: 'bg-pink-500 text-white border-pink-500',
-      red: 'bg-red-500 text-white border-red-500',
-      green: 'bg-green-500 text-white border-green-500',
-      purple: 'bg-purple-500 text-white border-purple-500',
-      yellow: 'bg-yellow-500 text-white border-yellow-500',
-      indigo: 'bg-indigo-500 text-white border-indigo-500'
-    };
-    return colorMap[color] || colorMap.orange;
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <AdminLayout title="Manage Categories">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-menu-accent-500"></div>
         </div>
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout title="Manage Categories">
-      {/* Success Message */}
-      {success && (
-        <div className="mb-4 bg-green-50 border-l-4 border-green-400 p-4 rounded">
-          <p className="text-sm text-green-700">{success}</p>
-        </div>
-      )}
+    <AdminLayout title="Categories">
+      <Head>
+        <title>Categories - Da Menuuu Brew Admin</title>
+      </Head>
 
-      {/* Error Message */}
-      {error && (
-        <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4 rounded">
-          <p className="text-sm text-red-700">{error}</p>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-menu-gray-900">Categories</h1>
+            <p className="mt-1 text-menu-gray-600">Organize your menu items by categories</p>
+          </div>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="inline-flex items-center px-4 py-2 bg-menu-accent-500 text-white rounded-lg hover:bg-menu-accent-600 transition-colors shadow-sm"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Category
+          </button>
         </div>
-      )}
 
-      {/* Header */}
-      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Category Management</h1>
-          <p className="text-gray-600">Manage your menu categories and subcategories</p>
-          <p className="text-sm text-gray-500 mt-1">
-            Total: {categories.length} categories, {categories.reduce((acc, cat) => acc + (cat.subcategories?.length || 0), 0)} subcategories
-          </p>
-        </div>
-        <button
-          onClick={() => setShowAddCategory(true)}
-          className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center gap-2 transition-colors"
-        >
-          <Plus size={20} />
-          Add Category
-        </button>
-      </div>
-
-      {/* Add Category Form */}
-      {showAddCategory && (
-        <div className="mb-6 bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Plus size={20} />
-            Add New Category
-          </h3>
-          <form onSubmit={handleCreateCategory} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category Name *
-                </label>
-                <input
-                  type="text"
-                  value={categoryForm.name}
-                  onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="e.g., Desserts, Appetizers"
-                  required
-                />
+        {/* Error Alert */}
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
+            <div className="flex justify-between items-center">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Order
-                </label>
-                <input
-                  type="number"
-                  value={categoryForm.order}
-                  onChange={(e) => setCategoryForm({ ...categoryForm, order: parseInt(e.target.value) || 1 })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-orange-500 focus:border-orange-500"
-                  min="1"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                value={categoryForm.description}
-                onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-orange-500 focus:border-orange-500"
-                rows="3"
-                placeholder="Brief description of this category..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Theme Color
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {COLOR_OPTIONS.map((colorOption) => (
-                  <button
-                    key={colorOption.value}
-                    type="button"
-                    onClick={() => setCategoryForm({ ...categoryForm, color: colorOption.value })}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
-                      categoryForm.color === colorOption.value
-                        ? 'border-gray-800 bg-gray-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className={`w-4 h-4 rounded-full ${colorOption.color}`}></div>
-                    <span className="text-sm">{colorOption.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-3">
               <button
-                type="submit"
-                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center gap-2"
+                onClick={() => setError(null)}
+                className="text-red-400 hover:text-red-600"
               >
-                <Save size={16} />
-                Create Category
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowAddCategory(false)}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 flex items-center gap-2"
-              >
-                <X size={16} />
-                Cancel
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
               </button>
             </div>
-          </form>
-        </div>
-      )}
-      {/* Categories List */}
-      <div className="space-y-4">
-        {categories.map((category) => (
-          <div key={category.id} className="bg-white rounded-lg shadow-sm border overflow-hidden">
-            {/* Main Category Header */}
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => toggleCategoryExpansion(category.id)}
-                    className="text-gray-500 hover:text-gray-700 transition-colors"
-                  >
-                    {expandedCategories.has(category.id) ? 
-                      <ChevronDown size={20} /> : 
-                      <ChevronRight size={20} />
-                    }
-                  </button>
-                  
-                  <div className={`w-4 h-4 rounded-full ${COLOR_OPTIONS.find(c => c.value === category.color)?.color || 'bg-gray-400'}`}></div>
-                  
-                  {editingCategory?.id === category.id ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={editingCategory.name}
-                        onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
-                        className="border border-gray-300 rounded px-2 py-1 text-lg font-semibold"
-                        autoFocus
-                      />
-                      <button
-                        onClick={() => handleUpdateCategory(category.id, {
-                          name: editingCategory.name,
-                          description: editingCategory.description
-                        })}
-                        className="text-green-600 hover:text-green-800"
-                      >
-                        <Save size={16} />
-                      </button>
-                      <button
-                        onClick={() => setEditingCategory(null)}
-                        className="text-gray-600 hover:text-gray-800"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
-                      <p className="text-sm text-gray-600">{category.description}</p>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center gap-2 ml-auto">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      category.active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {category.active ? 'Active' : 'Inactive'}
-                    </span>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                      Order: {category.order}
-                    </span>
-                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                      {(category.subcategories || []).length} subs
-                    </span>
-                  </div>
+          </div>
+        )}
+
+        {/* Add/Edit Form */}
+        {showAddForm && (
+          <div className="bg-white rounded-xl shadow-sm border border-menu-gray-100">
+            <div className="p-6 border-b border-menu-gray-100">
+              <h2 className="text-lg font-semibold text-menu-gray-900">
+                {editingCategory ? 'Edit Category' : 'Add New Category'}
+              </h2>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-menu-gray-700 mb-2">
+                    Category Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="block w-full px-3 py-2 border border-menu-gray-300 rounded-lg focus:outline-none focus:ring-menu-accent-500 focus:border-menu-accent-500"
+                    placeholder="e.g., Main Courses, Beverages"
+                  />
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setEditingCategory(category)}
-                    className="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50"
-                    title="Edit category"
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCategory(category.id, category.name)}
-                    className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50"
-                    title="Delete category"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                <div>
+                  <label htmlFor="order" className="block text-sm font-medium text-menu-gray-700 mb-2">
+                    Display Order
+                  </label>
+                  <input
+                    type="number"
+                    id="order"
+                    value={formData.order}
+                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                    className="block w-full px-3 py-2 border border-menu-gray-300 rounded-lg focus:outline-none focus:ring-menu-accent-500 focus:border-menu-accent-500"
+                    placeholder="0"
+                  />
                 </div>
               </div>
+              
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-menu-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="block w-full px-3 py-2 border border-menu-gray-300 rounded-lg focus:outline-none focus:ring-menu-accent-500 focus:border-menu-accent-500"
+                  placeholder="Optional description for this category"
+                />
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="h-4 w-4 text-menu-accent-600 focus:ring-menu-accent-500 border-menu-gray-300 rounded"
+                />
+                <label htmlFor="isActive" className="ml-2 block text-sm text-menu-gray-700">
+                  Active (visible on menu)
+                </label>
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-4 py-2 border border-menu-gray-300 rounded-lg text-menu-gray-700 bg-white hover:bg-menu-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-menu-accent-500 text-white rounded-lg hover:bg-menu-accent-600 transition-colors"
+                >
+                  {editingCategory ? 'Update Category' : 'Create Category'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Categories List */}
+        <div className="bg-white rounded-xl shadow-sm border border-menu-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-menu-gray-100">
+            <h2 className="text-lg font-semibold text-menu-gray-900">All Categories</h2>
+          </div>
+          
+          {categories.length === 0 ? (
+            <div className="p-12 text-center">
+              <svg className="mx-auto h-12 w-12 text-menu-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <h3 className="mt-4 text-lg font-medium text-menu-gray-900">No categories yet</h3>
+              <p className="mt-2 text-menu-gray-500">Get started by creating your first category.</p>
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="mt-4 inline-flex items-center px-4 py-2 bg-menu-accent-500 text-white rounded-lg hover:bg-menu-accent-600 transition-colors"
+              >
+                Create First Category
+              </button>
             </div>
-
-            {/* Subcategories (when expanded) */}
-            {expandedCategories.has(category.id) && (
-              <div className="p-6">
-                {/* Add Subcategory Form */}
-                <div className="mb-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <h4 className="text-md font-semibold mb-3 flex items-center gap-2">
-                    <Plus size={16} />
-                    Add Subcategory to {category.name}
-                  </h4>
-                  {addingSubcategoryTo === category.id ? (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <input
-                          type="text"
-                          placeholder="Subcategory name"
-                          value={subcategoryForm.name}
-                          onChange={(e) => setSubcategoryForm({...subcategoryForm, name: e.target.value})}
-                          className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
-                        <input
-                          type="number"
-                          placeholder="Order"
-                          value={subcategoryForm.order}
-                          onChange={(e) => setSubcategoryForm({...subcategoryForm, order: parseInt(e.target.value) || 1})}
-                          className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-orange-500 focus:border-orange-500"
-                          min="1"
-                        />
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Description (optional)"
-                        value={subcategoryForm.description}
-                        onChange={(e) => setSubcategoryForm({...subcategoryForm, description: e.target.value})}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-orange-500 focus:border-orange-500"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleAddSubcategory(category.id)}
-                          disabled={!subcategoryForm.name}
-                          className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
-                        >
-                          <Save size={16} />
-                          Add Subcategory
-                        </button>
-                        <button
-                          onClick={() => {
-                            setAddingSubcategoryTo(null);
-                            setSubcategoryForm({ name: '', description: '', order: 1 });
-                          }}
-                          className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 flex items-center gap-2"
-                        >
-                          <X size={16} />
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setAddingSubcategoryTo(category.id)}
-                      className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center gap-2"
-                    >
-                      <Plus size={16} />
-                      Add Subcategory
-                    </button>
-                  )}
-                </div>
-
-                {/* Subcategories List */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Subcategories ({(category.subcategories || []).length})
-                  </h4>
-                  {(category.subcategories || [])
-                    .sort((a, b) => (a.order || 0) - (b.order || 0))
-                    .map((subcategory) => (
-                    <div
-                      key={subcategory.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <Move size={14} className="text-gray-400" />
-                          <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
-                            #{subcategory.order || 0}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-900">{subcategory.name}</span>
-                          {subcategory.description && (
-                            <span className="text-gray-600 text-sm ml-2">- {subcategory.description}</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          subcategory.active !== false
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {subcategory.active !== false ? 'Active' : 'Inactive'}
+          ) : (
+            <div className="divide-y divide-menu-gray-200">
+              {categories.map((category) => (
+                <div key={category.id} className="p-6 flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <h3 className="text-lg font-medium text-menu-gray-900">{category.name}</h3>
+                      <span className="ml-3 text-sm text-menu-gray-500">Order: {category.order || 0}</span>
+                      {!category.isActive && (
+                        <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          Inactive
                         </span>
-                        <button
-                          onClick={() => handleDeleteSubcategory(category.id, subcategory.id, subcategory.name)}
-                          className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50"
-                          title="Delete subcategory"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+                      )}
                     </div>
-                  ))}
-                  {(!category.subcategories || category.subcategories.length === 0) && (
-                    <p className="text-gray-500 text-sm italic py-4 text-center bg-gray-50 rounded-lg border border-gray-200">
-                      No subcategories yet. Add one above to get started.
-                    </p>
-                  )}
+                    {category.description && (
+                      <p className="mt-1 text-sm text-menu-gray-600">{category.description}</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center space-x-3 ml-4">
+                    <button
+                      onClick={() => startEdit(category)}
+                      className="inline-flex items-center px-3 py-1.5 border border-menu-gray-300 rounded-lg text-sm font-medium text-menu-gray-700 bg-white hover:bg-menu-gray-50 transition-colors"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                    
+                    <button
+                      onClick={() => handleDelete(category.id, category.name)}
+                      className="inline-flex items-center px-3 py-1.5 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition-colors"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* Empty State */}
-      {categories.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
-          <div className="max-w-sm mx-auto">
-            <Palette size={48} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No categories found</h3>
-            <p className="text-gray-500 mb-4">
-              Get started by creating your first menu category. Categories help organize your menu items.
-            </p>
-            <button
-              onClick={() => setShowAddCategory(true)}
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center gap-2 mx-auto"
-            >
-              <Plus size={16} />
-              Create Your First Category
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Actions Panel */}
-      {categories.length > 0 && (
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-blue-900 mb-2">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div>
-              <h4 className="font-medium text-blue-800">Migration Tools</h4>
-              <p className="text-blue-600">
-                Need to import categories from the old system? 
-                Run: <code className="bg-blue-100 px-1 rounded">npm run migrate-categories</code>
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium text-blue-800">Testing</h4>
-              <p className="text-blue-600">
-                Test category operations: 
-                <code className="bg-blue-100 px-1 rounded">npm run test-categories</code>
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium text-blue-800">Next Steps</h4>
-              <p className="text-blue-600">
-                After setting up categories, add menu items to each subcategory in the Menu Items section.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </AdminLayout>
   );
 }
