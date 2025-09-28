@@ -1,4 +1,4 @@
-import { categoriesService } from '../../services/categoriesService';
+import categoriesService from '../../../services/categoriesService';
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   try {
     switch (method) {
       case 'GET':
-        const categories = await categoriesService.fetchCategories();
+        const categories = await categoriesService.getAllCategories();
         res.status(200).json(categories);
         break;
 

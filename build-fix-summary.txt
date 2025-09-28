@@ -1,0 +1,69 @@
+BUILD ERROR FIXES - IMPORT PATH & METHOD NAME ISSUES
+====================================================
+
+ISSUE: Module not found: Can't resolve '../../services/categoriesService'
+CAUSE: Wrong import paths and method names in API routes
+
+FIXES APPLIED:
+==============
+
+1. FIXED IMPORT PATHS:
+   File: /pages/api/categories/index.js
+   Before: import { categoriesService } from '../../services/categoriesService';
+   After:  import categoriesService from '../../../services/categoriesService';
+   
+   File: /pages/api/categories/[id].js  
+   Before: import { categoriesService } from '../../../services/categoriesService';
+   After:  import categoriesService from '../../../services/categoriesService';
+
+2. FIXED IMPORT SYNTAX (Named vs Default):
+   Before: import { categoriesService } from '../../../services/categoriesService';
+   After:  import categoriesService from '../../../services/categoriesService';
+   
+   Reason: categoriesService is exported as default, not named export
+
+3. FIXED METHOD NAMES:
+   File: /pages/api/categories/index.js
+   Before: categoriesService.fetchCategories()
+   After:  categoriesService.getAllCategories()
+   
+   File: /pages/api/categories/[id].js
+   Before: categoriesService.fetchCategory(id)
+   After:  categoriesService.getCategoryById(id)
+
+CATEGORIESSERVICE ACTUAL METHODS:
+=================================
+✅ getAllCategories() - Get all categories
+✅ getCategoryById(id) - Get single category  
+✅ createCategory(data) - Create new category
+✅ updateCategory(id, data) - Update category
+✅ deleteCategory(id) - Delete category
+✅ addSubcategory(categoryId, subcategory) - Add subcategory
+✅ updateSubcategory(categoryId, subcategoryId, data) - Update subcategory
+✅ removeSubcategory(categoryId, subcategoryId) - Remove subcategory
+
+PATH CALCULATION FROM API ROUTES:
+=================================
+From: /pages/api/categories/index.js
+To:   /services/categoriesService.js
+
+Path: categories → api → pages → root → services
+Result: ../../../services/categoriesService ✅
+
+EXPORT/IMPORT PATTERNS:
+======================
+✅ categoriesService.js: export default categoriesService;
+✅ API routes: import categoriesService from '../../../services/categoriesService';
+
+❌ Wrong: import { categoriesService } from '...' (named import)
+✅ Right: import categoriesService from '...' (default import)
+
+BUILD STATUS:
+=============
+✅ Import paths corrected
+✅ Method names aligned with actual service methods  
+✅ Export/import syntax fixed
+✅ No more "Module not found" errors
+✅ Ready for successful compilation
+
+The API routes now properly import and use the categoriesService with correct paths and method names.

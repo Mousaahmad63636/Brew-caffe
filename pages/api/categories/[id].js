@@ -1,4 +1,4 @@
-import { categoriesService } from '../../../services/categoriesService';
+import categoriesService from '../../../services/categoriesService';
 
 export default async function handler(req, res) {
   const { method, query } = req;
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   try {
     switch (method) {
       case 'GET':
-        const category = await categoriesService.fetchCategory(id);
+        const category = await categoriesService.getCategoryById(id);
         if (!category) {
           return res.status(404).json({ error: 'Category not found' });
         }
