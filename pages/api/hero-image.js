@@ -1,12 +1,20 @@
-import { getHeroImage, saveHeroImage, uploadHeroImage, deleteHeroImage } from '../../../services/heroImageService';
+import { getHeroImage, saveHeroImage, clearHeroImage } from '../../../services/heroImageService';
 import formidable from 'formidable';
 import fs from 'fs';
+import path from 'path';
 
 export const config = {
   api: {
     bodyParser: false,
   },
 };
+
+const HERO_IMAGES_DIR = path.join(process.cwd(), 'public', 'hero-images');
+
+// Ensure directory exists
+if (!fs.existsSync(HERO_IMAGES_DIR)) {
+  fs.mkdirSync(HERO_IMAGES_DIR, { recursive: true });
+}
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -15,7 +23,7 @@ export default async function handler(req, res) {
     switch (method) {
       case 'GET':
         const heroData = await getHeroImage();
-        return res.status(200).json(heroData || { url: null });
+        return res.status(200).json(heroData || { path: null });
 
       case 'POST':
         // Parse multipart form data
@@ -36,24 +44,38 @@ export default async function handler(req, res) {
               return res.status(400).json({ error: 'No image file provided' });
             }
 
-            // Read file as buffer
-            const fileBuffer = fs.readFileSync(imageFile.filepath);
-            const file = new File([fileBuffer], imageFile.originalFilename || 'hero.jpg', {
-              type: imageFile.mimetype,
-            });
+            // Delete old hero image if exists
+            const currentHero = await getHeroImage();
+            if (currentHero?.filename) {
+              const oldPath = path.join(HERO_IMAGES_DIR, currentHero.filename);
+              if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+              }
+            }
 
-            // Upload to Firebase Storage
-            const uploadResult = await uploadHeroImage(file);
+            // Generate unique filename
+            const timestamp = Date.now();
+            const ext = path.extname(imageFile.originalFilename || 'image.jpg');
+            const filename = `hero-${timestamp}${ext}`;
+            const newPath = path.join(HERO_IMAGES_DIR, filename);
 
-            // Save metadata to Firestore
-            await saveHeroImage(uploadResult);
+            // Copy file to public directory
+            fs.copyFileSync(imageFile.filepath, newPath);
 
             // Clean up temp file
             fs.unlinkSync(imageFile.filepath);
 
+            // Save metadata to Firestore
+            const heroData = {
+              filename: filename,
+              path: `/hero-images/${filename}`,
+              uploadedAt: new Date().toISOString()
+            };
+            await saveHeroImage(heroData);
+
             return res.status(200).json({
               success: true,
-              data: uploadResult,
+              data: heroData,
             });
           } catch (uploadError) {
             console.error('Upload error:', uploadError);
@@ -64,8 +86,15 @@ export default async function handler(req, res) {
       case 'DELETE':
         const currentHero = await getHeroImage();
         if (currentHero?.filename) {
-          await deleteHeroImage(currentHero.filename);
+          // Delete physical file
+          const filePath = path.join(HERO_IMAGES_DIR, currentHero.filename);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
         }
+        
+        // Clear from Firestore
+        await clearHeroImage();
         return res.status(200).json({ success: true });
 
       default:

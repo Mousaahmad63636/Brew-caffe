@@ -22,7 +22,7 @@ export default function HeroImageManager() {
       const response = await fetch('/api/hero-image');
       if (response.ok) {
         const data = await response.json();
-        setHeroImage(data.url ? data : null);
+        setHeroImage(data.path ? data : null);
       }
     } catch (err) {
       console.error('Error loading hero image:', err);
@@ -172,11 +172,11 @@ export default function HeroImageManager() {
               <div className="aspect-video bg-menu-gray-100 rounded-lg flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-menu-accent-500"></div>
               </div>
-            ) : heroImage?.url ? (
+            ) : heroImage?.path ? (
               <div className="space-y-4">
                 <div className="relative group">
                   <img
-                    src={heroImage.url}
+                    src={heroImage.path}
                     alt="Hero Image"
                     className="w-full aspect-video object-cover rounded-lg"
                   />
@@ -298,10 +298,10 @@ export default function HeroImageManager() {
         <div className="bg-white rounded-xl shadow-sm border border-menu-gray-100 p-6">
           <h2 className="text-lg font-semibold text-menu-gray-900 mb-4">How it looks on homepage</h2>
           <div className="bg-menu-gray-100 rounded-lg p-4">
-            {heroImage?.url ? (
+            {heroImage?.path ? (
               <div className="relative">
                 <img
-                  src={heroImage.url}
+                  src={heroImage.path}
                   alt="Hero Preview"
                   className="w-full h-48 md:h-64 object-cover rounded-lg"
                 />

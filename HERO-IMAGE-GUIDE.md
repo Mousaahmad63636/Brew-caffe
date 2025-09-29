@@ -1,7 +1,7 @@
 # Hero Image Feature - Setup & Usage Guide
 
 ## Overview
-The hero image feature allows admins to upload and manage a large banner image that displays at the top of the restaurant's public menu homepage. This creates a visually appealing entrance to your digital menu.
+The hero image feature allows admins to upload and manage a large banner image that displays at the top of the restaurant's public menu homepage. Images are stored locally in the `/public/hero-images/` folder (no Firebase Storage needed).
 
 ## Quick Start
 
@@ -16,27 +16,8 @@ Or manually install:
 npm install formidable
 ```
 
-### 2. Verify Firebase Storage is Enabled
-Make sure Firebase Storage is enabled in your Firebase Console:
-1. Go to Firebase Console → Storage
-2. Click "Get Started" if not already enabled
-3. Set security rules (see below)
-
-### 3. Firebase Storage Security Rules
-Add these rules in Firebase Console → Storage → Rules:
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /hero-images/{imageId} {
-      // Allow authenticated users to read
-      allow read: if true;
-      // Allow authenticated users to write
-      allow write: if request.auth != null;
-    }
-  }
-}
-```
+### 2. That's It!
+No Firebase Storage configuration needed. Images are stored locally in `/public/hero-images/`.
 
 ## Features
 
@@ -53,6 +34,12 @@ service firebase.storage {
   - Restaurant name overlaid on image
   - Gradient overlay for better text visibility
   - Responsive design (mobile, tablet, desktop)
+
+### Storage
+- **Local File Storage**: Images saved to `/public/hero-images/`
+- **Metadata**: Firestore stores only filename and upload date
+- **No Storage Costs**: Uses Next.js public folder (free)
+- **Auto-Cleanup**: Old hero image deleted when new one uploaded
 
 ## Usage Instructions
 
@@ -78,35 +65,36 @@ service firebase.storage {
 2. Hover over current image
 3. Click the X button in top-right corner
 4. Confirm deletion
-5. Image will be removed from storage and homepage
+5. Image will be removed from server and homepage
 
 ## Technical Details
 
 ### File Structure
-
 ```
+public/
+  └── hero-images/           # Hero images stored here
+      ├── .gitkeep
+      └── hero-1234567890.jpg  # Only 1 image at a time
+
 services/
-  └── heroImageService.js          # Firebase Storage & Firestore operations
+  └── heroImageService.js    # Firestore metadata operations
 
 pages/
-  ├── index.js                     # Public menu with hero display
+  ├── index.js               # Public menu with hero display
   └── admin/
-      └── hero-image.js            # Admin management page
+      └── hero-image.js      # Admin management page
 
 pages/api/
-  └── hero-image.js                # API endpoints for upload/delete
-
-lib/
-  └── firebaseClient.js            # Updated with Storage export
+  └── hero-image.js          # API endpoints for upload/delete
 ```
 
 ### Data Storage
-- **Firebase Storage**: Actual image files stored in `/hero-images/` folder
-- **Firestore**: Image metadata stored in `siteSettings/homepage-hero` document
+- **Local Files**: Images stored in `/public/hero-images/` folder
+- **Firestore**: Only metadata stored in `siteSettings/homepage-hero`
   ```json
   {
-    "url": "https://firebasestorage.googleapis.com/...",
-    "filename": "hero-images/hero-1234567890-image.jpg",
+    "filename": "hero-1234567890.jpg",
+    "path": "/hero-images/hero-1234567890.jpg",
     "uploadedAt": "2025-01-15T10:30:00.000Z",
     "updatedAt": "2025-01-15T10:30:00.000Z"
   }
@@ -119,8 +107,8 @@ Fetch current hero image data
 ```javascript
 // Response
 {
-  "url": "string",
-  "filename": "string",
+  "filename": "hero-1234567890.jpg",
+  "path": "/hero-images/hero-1234567890.jpg",
   "uploadedAt": "ISO date string"
 }
 ```
@@ -133,8 +121,8 @@ Upload new hero image (multipart/form-data)
 {
   "success": true,
   "data": {
-    "url": "string",
-    "filename": "string",
+    "filename": "hero-1234567890.jpg",
+    "path": "/hero-images/hero-1234567890.jpg",
     "uploadedAt": "ISO date string"
   }
 }
@@ -165,25 +153,36 @@ Delete current hero image
 ### Without Hero Image
 If no hero image is uploaded, the homepage displays normally without the hero section, starting with the MenuHeader component.
 
+## Advantages of Local Storage
+
+### Cost Benefits
+- ✅ **No Firebase Storage Costs**: Free tier sufficient
+- ✅ **No Storage Quotas**: Unlimited on your server
+- ✅ **Simple Architecture**: No external dependencies
+
+### Performance
+- ✅ **Faster Loading**: No Firebase CDN latency
+- ✅ **Direct Access**: Served from same domain
+- ✅ **Browser Caching**: Automatic caching
+
+### Simplicity
+- ✅ **No Storage Rules**: No Firebase config needed
+- ✅ **Easy Backup**: Just copy /public folder
+- ✅ **Simple Deployment**: Included in build
+
 ## Troubleshooting
 
 ### Upload Fails
-- Check Firebase Storage is enabled
-- Verify storage rules allow writes
-- Ensure file is under 10MB
+- Check `/public/hero-images/` folder exists and is writable
+- Verify file is under 10MB
 - Check network connection
-- Verify environment variables are set
+- Check browser console for errors
 
 ### Image Not Displaying
-- Check browser console for errors
-- Verify image URL is accessible
-- Check Firestore document exists
-- Try re-uploading the image
-
-### Permission Errors
-- Verify Firebase Storage rules
-- Check authentication status
-- Ensure admin access
+- Verify file exists in `/public/hero-images/`
+- Check Firestore document has correct path
+- Clear browser cache
+- Check file permissions
 
 ### File Too Large Error
 - Compress image before uploading
@@ -204,29 +203,36 @@ If no hero image is uploaded, the homepage displays normally without the hero se
 3. **Consider brand colors** for cohesive design
 4. **Update seasonally** for freshness
 
-### Performance
-- Images are lazy-loaded for better performance
-- CDN delivery via Firebase Storage
-- Cached by browser for repeat visitors
+### Deployment
+- Hero images are included in build/deployment
+- Commit `/public/hero-images/` to git if you want images in version control
+- Or add to `.gitignore` if images change frequently
 
-## Future Enhancements
-Potential features to add:
-- Multiple hero images with carousel/slideshow
-- Scheduled hero images (seasonal)
-- Different images for mobile vs desktop
-- Hero image cropping tool
-- Image filters and adjustments
-- Text customization (position, color, font)
+## Backup & Recovery
+
+### Manual Backup
+Copy the entire `/public/hero-images/` folder to backup location
+
+### Restore
+Copy backed up files back to `/public/hero-images/`
+
+### Migration
+To move to different server, copy `/public/hero-images/` folder
+
+## Limitations
+- Single hero image only (by design)
+- Manual file cleanup if you need to free space
+- No automatic image optimization (compress before upload)
 
 ## Support
 For issues or questions:
-1. Check Firebase Console logs
+1. Check `/public/hero-images/` folder permissions
 2. Review browser console errors  
-3. Verify all setup steps completed
-4. Check Firebase Storage quotas
+3. Verify Firestore connection
+4. Check file size limits
 
 ---
 
 **Created**: January 2025  
-**Version**: 1.0  
-**Status**: Production Ready
+**Version**: 2.0 (Local Storage)  
+**Status**: Production Ready (Free Tier Friendly)

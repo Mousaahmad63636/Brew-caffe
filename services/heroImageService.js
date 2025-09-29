@@ -1,34 +1,8 @@
-import { collection, doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '../lib/firebaseClient';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebaseClient';
 
 const HERO_DOC_ID = 'homepage-hero';
 const HERO_COLLECTION = 'siteSettings';
-
-/**
- * Upload hero image to Firebase Storage
- */
-export async function uploadHeroImage(file) {
-  try {
-    // Create a unique filename with timestamp
-    const timestamp = Date.now();
-    const filename = `hero-images/hero-${timestamp}-${file.name}`;
-    const storageRef = ref(storage, filename);
-
-    // Upload file
-    const snapshot = await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(snapshot.ref);
-
-    return {
-      url: downloadURL,
-      filename: filename,
-      uploadedAt: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('Error uploading hero image:', error);
-    throw new Error('Failed to upload image: ' + error.message);
-  }
-}
 
 /**
  * Get current hero image data
@@ -50,6 +24,8 @@ export async function getHeroImage() {
 
 /**
  * Save hero image data to Firestore
+ * Image itself is stored in /public/hero-images/
+ * Only filename and metadata stored in Firestore
  */
 export async function saveHeroImage(heroData) {
   try {
@@ -67,26 +43,21 @@ export async function saveHeroImage(heroData) {
 }
 
 /**
- * Delete hero image from storage
+ * Clear hero image data from Firestore
  */
-export async function deleteHeroImage(filename) {
+export async function clearHeroImage() {
   try {
-    if (filename) {
-      const storageRef = ref(storage, filename);
-      await deleteObject(storageRef);
-    }
-    
-    // Clear from Firestore
     const docRef = doc(db, HERO_COLLECTION, HERO_DOC_ID);
     await setDoc(docRef, {
-      url: null,
       filename: null,
+      path: null,
+      uploadedAt: null,
       updatedAt: new Date().toISOString()
     }, { merge: true });
     
     return true;
   } catch (error) {
-    console.error('Error deleting hero image:', error);
-    throw new Error('Failed to delete hero image: ' + error.message);
+    console.error('Error clearing hero image:', error);
+    throw new Error('Failed to clear hero image: ' + error.message);
   }
 }

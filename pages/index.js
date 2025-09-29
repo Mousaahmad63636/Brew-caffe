@@ -34,7 +34,7 @@ export default function Menu() {
           const heroResponse = await fetch('/api/hero-image');
           if (heroResponse.ok) {
             const heroData = await heroResponse.json();
-            if (heroData.url) {
+            if (heroData.path) {
               setHeroImage(heroData);
             }
           }
@@ -176,10 +176,10 @@ export default function Menu() {
       
       <div className="min-h-screen bg-menu-gray-50">
         {/* Hero Image Section */}
-        {heroImage?.url && (
+        {heroImage?.path && (
           <div className="relative w-full h-48 md:h-64 lg:h-72 overflow-hidden">
             <img
-              src={heroImage.url}
+              src={heroImage.path}
               alt="Restaurant Hero"
               className="w-full h-full object-cover"
             />

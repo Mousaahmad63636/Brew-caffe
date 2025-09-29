@@ -1,30 +1,36 @@
-# Hero Image Feature - Implementation Summary
+# Hero Image Feature - Implementation Summary (Local Storage)
 
 ## What Was Built
 
 ### Core Features
 ✅ Admin Hero Image Management Page
-✅ Firebase Storage Integration  
+✅ Local File Storage (No Firebase Storage Needed!)
 ✅ Image Upload with Preview
 ✅ Image Delete Functionality
 ✅ Enhanced Homepage with Hero Display
 ✅ Responsive Design (Mobile/Tablet/Desktop)
+✅ Auto-cleanup of old images
 
 ## Files Created
 
-1. **services/heroImageService.js**
-   - Upload images to Firebase Storage
+1. **public/hero-images/** (Directory)
+   - Stores hero images locally
+   - Only 1 image at a time
+   - Old images auto-deleted on new upload
+
+2. **services/heroImageService.js**
    - Save/retrieve metadata from Firestore
-   - Delete images from storage
+   - Clear image metadata
    - Collection: `siteSettings/homepage-hero`
 
-2. **pages/api/hero-image.js**
-   - GET: Fetch current hero image
-   - POST: Upload new hero image
-   - DELETE: Remove hero image
+3. **pages/api/hero-image.js**
+   - GET: Fetch current hero image metadata
+   - POST: Upload image to /public folder
+   - DELETE: Remove hero image file and metadata
    - Uses formidable for file parsing
+   - Handles file system operations
 
-3. **pages/admin/hero-image.js**
+4. **pages/admin/hero-image.js**
    - Full admin UI for hero management
    - File upload with drag-and-drop
    - Live preview before upload
@@ -32,25 +38,25 @@
    - Image guidelines and recommendations
    - Success/error notifications
 
-4. **HERO-IMAGE-GUIDE.md**
+5. **HERO-IMAGE-GUIDE.md**
    - Complete documentation
    - Setup instructions
    - Usage guide
    - Troubleshooting tips
 
-5. **install-formidable.bat**
+6. **install-formidable.bat**
    - Quick install script for dependencies
 
 ## Files Modified
 
 1. **lib/firebaseClient.js**
-   - Added Firestore and Storage exports
+   - Added Firestore export (no Storage needed)
    - Enables client-side Firebase operations
 
 2. **pages/index.js**
    - Added hero image state
-   - Fetch hero image on load
-   - Display hero section at top
+   - Fetch hero image metadata on load
+   - Display hero section at top with image from /public
    - Responsive hero image display
    - Gradient overlay with restaurant info
 
@@ -66,24 +72,8 @@ npm install formidable
 ```
 Or run: `.\install-formidable.bat`
 
-### 2. Firebase Storage Rules
-In Firebase Console → Storage → Rules:
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /hero-images/{imageId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-  }
-}
-```
-
-### 3. Verify Environment Variables
-Ensure these exist in `.env.local`:
-- NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-- All other Firebase config variables
+### 2. That's It!
+No Firebase Storage configuration needed. Images are stored locally in `/public/hero-images/`.
 
 ## How to Use
 
@@ -92,7 +82,7 @@ Ensure these exist in `.env.local`:
 2. Click "Manage Hero Image"
 3. Select image file (max 10MB)
 4. Preview and upload
-5. View on homepage
+5. View on homepage at `/hero-images/[filename]`
 
 ### Homepage Display
 - Hero image appears at top of menu
@@ -100,32 +90,65 @@ Ensure these exist in `.env.local`:
 - Restaurant name and description overlay
 - Gradient for text visibility
 - Smooth loading transition
+- Served from local /public folder
 
 ## Technical Architecture
 
 ### Data Flow
 ```
-Admin Upload → API Route → Firebase Storage → URL Generated
+Admin Upload → API Route → Save to /public/hero-images/
                     ↓
-              Firestore Document → Metadata Saved
+         Delete old image (if exists)
                     ↓
-              Homepage Fetch → Display Hero
+              Firestore → Save metadata (filename, path)
+                    ↓
+              Homepage Fetch → Display from /public
+```
+
+### Storage Structure
+```
+/public/hero-images/
+  ├── .gitkeep
+  └── hero-1234567890.jpg  ← Only 1 file at a time
+
+Firestore: siteSettings/homepage-hero
+{
+  filename: "hero-1234567890.jpg",
+  path: "/hero-images/hero-1234567890.jpg",
+  uploadedAt: "2025-01-15T10:30:00Z"
+}
 ```
 
 ### Image Processing
 1. File selected in admin
 2. Client-side preview generated
-3. Upload to Firebase Storage
-4. URL returned and saved to Firestore
-5. Homepage fetches URL on load
-6. Image displayed with optimizations
+3. Upload to API endpoint
+4. API saves to /public/hero-images/
+5. Old image deleted from /public
+6. Metadata saved to Firestore
+7. Path returned to client
+8. Homepage uses path to display image
 
-## Performance Optimizations
-- Lazy loading for images
-- CDN delivery via Firebase
-- Browser caching enabled
-- Optimized image dimensions
-- Compressed file size recommendations
+## Advantages Over Firebase Storage
+
+### Cost & Simplicity
+- ✅ **No Firebase Storage costs**
+- ✅ **Free tier friendly**
+- ✅ **No storage quota concerns**
+- ✅ **No Storage security rules needed**
+- ✅ **Simpler architecture**
+
+### Performance
+- ✅ **Faster loading** (same domain)
+- ✅ **Better caching** (browser native)
+- ✅ **No CDN latency**
+- ✅ **Direct file access**
+
+### Deployment
+- ✅ **Included in build**
+- ✅ **Easy backup** (copy folder)
+- ✅ **Simple migration**
+- ✅ **Version control ready**
 
 ## UI/UX Enhancements
 
@@ -137,6 +160,7 @@ Admin Upload → API Route → Firebase Storage → URL Generated
   - Desktop: 18rem
 - **Text Overlay**: Centered with shadows
 - **Gradient**: Subtle black fade
+- **Fast Loading**: Local file access
 
 ### Admin Page
 - **Dual Panel Layout**: Current + Upload
@@ -144,18 +168,68 @@ Admin Upload → API Route → Firebase Storage → URL Generated
 - **Drag & Drop**: Easy file selection
 - **Guidelines**: Built-in recommendations
 - **Status Messages**: Success/error feedback
+- **Current Stats**: Upload date display
 
 ## Security Features
 - Admin-only upload access
 - File type validation (images only)
 - File size limit (10MB)
-- Firebase Storage rules
-- Authentication required for writes
+- Authentication required for uploads
+- Automatic old file cleanup
 
 ## Browser Compatibility
 ✅ Chrome, Firefox, Safari, Edge
 ✅ Mobile browsers (iOS Safari, Chrome Mobile)
 ✅ Responsive design for all devices
+✅ Works offline (after initial load)
+
+## File Management
+
+### Auto-Cleanup
+- Old hero image automatically deleted
+- Only 1 image stored at a time
+- No manual cleanup needed
+
+### Manual Management
+- Images in `/public/hero-images/`
+- Can manually delete if needed
+- Filename format: `hero-[timestamp].[ext]`
+
+## Testing Checklist
+- [x] Install formidable package
+- [x] Create /public/hero-images/ directory
+- [ ] Upload test image via admin
+- [ ] Verify image displays on homepage
+- [ ] Test mobile responsiveness
+- [ ] Test delete functionality
+- [ ] Check error handling
+- [ ] Verify file size limits
+- [ ] Test without hero image
+- [ ] Check old file deletion
+
+## Known Limitations
+- Single hero image only (by design)
+- No image cropping (upload full size)
+- No text customization options
+- 10MB file size limit
+- No scheduled image changes
+- Manual compression recommended
+
+## Deployment Notes
+
+### Production Deployment
+- `/public/hero-images/` included in build
+- Consider adding to `.gitignore` if images change frequently
+- Or commit if you want images in version control
+
+### Backup Strategy
+```bash
+# Backup
+cp -r public/hero-images/ backups/hero-images-$(date +%Y%m%d)/
+
+# Restore
+cp -r backups/hero-images-20250115/ public/hero-images/
+```
 
 ## Future Enhancements (Suggested)
 - Image cropping tool
@@ -164,32 +238,37 @@ Admin Upload → API Route → Firebase Storage → URL Generated
 - Mobile-specific images
 - Text position customization
 - Image filters/effects
+- Automatic compression
+- WebP conversion
 
-## Testing Checklist
-- [ ] Install formidable package
-- [ ] Set Firebase Storage rules
-- [ ] Upload test image via admin
-- [ ] Verify image displays on homepage
-- [ ] Test mobile responsiveness
-- [ ] Test delete functionality
-- [ ] Check error handling
-- [ ] Verify file size limits
-- [ ] Test without hero image
+## Troubleshooting
 
-## Known Limitations
-- Single hero image only (no carousel yet)
-- No image cropping (upload full size)
-- No text customization options
-- 10MB file size limit
-- No scheduled image changes
+### Upload Fails
+- Check `/public/hero-images/` exists
+- Verify folder permissions (writable)
+- Check file size under 10MB
+- Review server console logs
+
+### Image Not Showing
+- Verify file in `/public/hero-images/`
+- Check Firestore has correct path
+- Clear browser cache
+- Restart dev server
+
+### Permission Errors
+- Check folder permissions
+- Verify admin authentication
+- Review API route logs
 
 ## Support & Documentation
 - Full guide: HERO-IMAGE-GUIDE.md
-- Firebase docs: https://firebase.google.com/docs/storage
 - Formidable docs: https://github.com/node-formidable/formidable
+- Next.js public folder: https://nextjs.org/docs/basic-features/static-file-serving
 
 ---
 
 **Implementation Date**: January 2025
+**Version**: 2.0 (Local Storage)
 **Status**: ✅ Complete and Production Ready
-**Next Steps**: Run install-formidable.bat, set Firebase rules, start uploading!
+**Storage**: Local (/public folder) - Free tier friendly!
+**Next Steps**: Run install-formidable.bat, start uploading!
