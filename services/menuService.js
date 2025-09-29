@@ -11,7 +11,7 @@ const transformMenuData = async (apiItems) => {
       return {
         restaurant: {
           name: "Brew & Crepe",
-          description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
+          description: "",
           location: "Downtown District"
         },
         mainCategories: []
@@ -75,7 +75,7 @@ const transformMenuData = async (apiItems) => {
     return {
       restaurant: {
         name: "Brew & Crepe",
-        description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
+        description: "",
         location: "Downtown District"
       },
       mainCategories: mainCategories
@@ -86,7 +86,7 @@ const transformMenuData = async (apiItems) => {
     return {
       restaurant: {
         name: "Brew & Crepe",
-        description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
+        description: "",
         location: "Downtown District"
       },
       mainCategories: []
