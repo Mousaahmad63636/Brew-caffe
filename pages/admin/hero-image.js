@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../../components/AdminLayout';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import ImageUpload from '../../components/ImageUpload';
+import { Image as ImageIcon } from 'lucide-react';
 
 export default function HeroImageManager() {
   const [heroImage, setHeroImage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [imageData, setImageData] = useState('');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
@@ -22,7 +22,7 @@ export default function HeroImageManager() {
       const response = await fetch('/api/hero-image');
       if (response.ok) {
         const data = await response.json();
-        setHeroImage(data.path ? data : null);
+        setHeroImage(data.image ? data : null);
       }
     } catch (err) {
       console.error('Error loading hero image:', err);
@@ -31,47 +31,23 @@ export default function HeroImageManager() {
     }
   };
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
-      return;
-    }
-
-    // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('File size must be less than 10MB');
-      return;
-    }
-
-    setSelectedFile(file);
-    setError(null);
-
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!imageData) {
+      setError('Please select an image first');
+      return;
+    }
 
     try {
       setUploading(true);
       setError(null);
       setSuccess(null);
 
-      const formData = new FormData();
-      formData.append('image', selectedFile);
-
       const response = await fetch('/api/hero-image', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image: imageData }),
       });
 
       if (!response.ok) {
@@ -88,8 +64,7 @@ export default function HeroImageManager() {
       const result = await response.json();
       setHeroImage(result.data);
       setSuccess('Hero image uploaded successfully!');
-      setSelectedFile(null);
-      setPreviewUrl(null);
+      setImageData('');
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
@@ -126,12 +101,6 @@ export default function HeroImageManager() {
     } finally {
       setUploading(false);
     }
-  };
-
-  const cancelSelection = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setError(null);
   };
 
   return (
@@ -178,11 +147,11 @@ export default function HeroImageManager() {
               <div className="aspect-video bg-menu-gray-100 rounded-lg flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-menu-accent-500"></div>
               </div>
-            ) : heroImage?.path ? (
+            ) : heroImage?.image ? (
               <div className="space-y-4">
                 <div className="relative group">
                   <img
-                    src={heroImage.path}
+                    src={heroImage.image}
                     alt="Hero Image"
                     className="w-full aspect-video object-cover rounded-lg"
                   />
@@ -191,7 +160,9 @@ export default function HeroImageManager() {
                     disabled={uploading}
                     className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50"
                   >
-                    <X className="w-5 h-5" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 </div>
                 <div className="text-sm text-menu-gray-600">
@@ -211,79 +182,33 @@ export default function HeroImageManager() {
             <h2 className="text-lg font-semibold text-menu-gray-900 mb-4">Upload New Image</h2>
             
             <div className="space-y-4">
-              {/* File Input */}
-              <div>
-                <label className="block text-sm font-medium text-menu-gray-700 mb-2">
-                  Select Image
-                </label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    disabled={uploading}
-                    className="block w-full text-sm text-menu-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-lg file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-menu-accent-50 file:text-menu-accent-700
-                      hover:file:bg-menu-accent-100
-                      disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                </div>
-                <p className="mt-1 text-xs text-menu-gray-500">
-                  Recommended: 1920x600px, max 10MB (JPG, PNG, WebP)
-                </p>
-              </div>
-
-              {/* Preview */}
-              {previewUrl && (
-                <div className="relative">
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-full aspect-video object-cover rounded-lg border-2 border-menu-accent-200"
-                  />
-                  <button
-                    onClick={cancelSelection}
-                    disabled={uploading}
-                    className="absolute top-2 right-2 bg-white text-menu-gray-700 p-2 rounded-lg shadow-sm hover:bg-menu-gray-50"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+              {/* ImageUpload Component */}
+              <ImageUpload 
+                value={imageData}
+                onChange={setImageData}
+                label="Hero Image"
+              />
 
               {/* Upload Button */}
-              <div className="flex gap-3">
-                <button
-                  onClick={handleUpload}
-                  disabled={!selectedFile || uploading}
-                  className="flex-1 flex items-center justify-center px-4 py-2 bg-menu-accent-500 text-white rounded-lg hover:bg-menu-accent-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {uploading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-5 h-5 mr-2" />
-                      Upload Image
-                    </>
-                  )}
-                </button>
-                
-                {selectedFile && (
-                  <button
-                    onClick={cancelSelection}
-                    disabled={uploading}
-                    className="px-4 py-2 border border-menu-gray-300 text-menu-gray-700 rounded-lg hover:bg-menu-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Cancel
-                  </button>
+              <button
+                onClick={handleUpload}
+                disabled={!imageData || uploading}
+                className="w-full flex items-center justify-center px-4 py-3 bg-menu-accent-500 text-white rounded-lg hover:bg-menu-accent-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+              >
+                {uploading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    Upload Hero Image
+                  </>
                 )}
-              </div>
+              </button>
 
               {/* Guidelines */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -292,8 +217,9 @@ export default function HeroImageManager() {
                   <li>• Use high-quality images for best results</li>
                   <li>• Recommended dimensions: 1920x600px (16:5 ratio)</li>
                   <li>• Landscape orientation works best</li>
-                  <li>• File size must be under 10MB</li>
-                  <li>• Supported formats: JPG, PNG, WebP</li>
+                  <li>• File size must be under 5MB</li>
+                  <li>• Supported formats: JPG, PNG, GIF, WebP</li>
+                  <li>• Image is automatically compressed for fast loading</li>
                 </ul>
               </div>
             </div>
@@ -304,10 +230,10 @@ export default function HeroImageManager() {
         <div className="bg-white rounded-xl shadow-sm border border-menu-gray-100 p-6">
           <h2 className="text-lg font-semibold text-menu-gray-900 mb-4">How it looks on homepage</h2>
           <div className="bg-menu-gray-100 rounded-lg p-4">
-            {heroImage?.path ? (
+            {heroImage?.image ? (
               <div className="relative">
                 <img
-                  src={heroImage.path}
+                  src={heroImage.image}
                   alt="Hero Preview"
                   className="w-full h-48 md:h-64 object-cover rounded-lg"
                 />

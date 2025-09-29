@@ -6,6 +6,7 @@ const HERO_COLLECTION = 'siteSettings';
 
 /**
  * Get current hero image data
+ * Returns base64 image string and metadata
  */
 export async function getHeroImage() {
   try {
@@ -23,19 +24,22 @@ export async function getHeroImage() {
 }
 
 /**
- * Save hero image data to Firestore
- * Image itself is stored in /public/hero-images/
- * Only filename and metadata stored in Firestore
+ * Save hero image to Firestore
+ * Image is stored as base64 string (same as menu items)
+ * @param {string} imageBase64 - Base64 encoded image string
  */
-export async function saveHeroImage(heroData) {
+export async function saveHeroImage(imageBase64) {
   try {
     const docRef = doc(db, HERO_COLLECTION, HERO_DOC_ID);
-    await setDoc(docRef, {
-      ...heroData,
+    const heroData = {
+      image: imageBase64, // Store base64 string directly
+      uploadedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
-    }, { merge: true });
+    };
     
-    return true;
+    await setDoc(docRef, heroData, { merge: true });
+    
+    return heroData;
   } catch (error) {
     console.error('Error saving hero image:', error);
     throw new Error('Failed to save hero image: ' + error.message);
@@ -43,14 +47,13 @@ export async function saveHeroImage(heroData) {
 }
 
 /**
- * Clear hero image data from Firestore
+ * Clear hero image from Firestore
  */
 export async function clearHeroImage() {
   try {
     const docRef = doc(db, HERO_COLLECTION, HERO_DOC_ID);
     await setDoc(docRef, {
-      filename: null,
-      path: null,
+      image: null,
       uploadedAt: null,
       updatedAt: new Date().toISOString()
     }, { merge: true });

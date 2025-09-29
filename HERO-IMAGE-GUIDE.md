@@ -1,238 +1,352 @@
-# Hero Image Feature - Setup & Usage Guide
+# Hero Image Feature - Guide (Base64 Storage)
 
 ## Overview
-The hero image feature allows admins to upload and manage a large banner image that displays at the top of the restaurant's public menu homepage. Images are stored locally in the `/public/hero-images/` folder (no Firebase Storage needed).
+The hero image feature allows admins to upload and manage a large banner image displayed at the top of the homepage. Images are stored as **base64 strings in Firestore** - the same method used for menu item images.
 
 ## Quick Start
 
-### 1. Install Required Dependencies
-Run the installation script:
-```bash
-.\install-formidable.bat
-```
+### 1. No Installation Needed!
+✅ All dependencies already installed  
+✅ No additional packages required  
+✅ No Firebase Storage configuration needed  
+✅ Works exactly like menu item images
 
-Or manually install:
-```bash
-npm install formidable
-```
-
-### 2. That's It!
-No Firebase Storage configuration needed. Images are stored locally in `/public/hero-images/`.
+### 2. Start Using
+1. Start dev server: `npm run dev`
+2. Go to: `http://localhost:3000/admin/hero-image`
+3. Upload your hero image
+4. Done!
 
 ## Features
 
 ### Admin Dashboard
 - **Hero Image Manager** (`/admin/hero-image`)
-  - Upload new hero images
-  - Preview current hero image
+  - Drag & drop image upload
+  - Automatic image compression
+  - Preview before upload
   - Delete existing hero image
-  - Live preview of how it appears on homepage
+  - Live preview of homepage display
 
 ### Public Display
 - **Homepage Hero Section**
-  - Large banner image at top of menu
-  - Restaurant name overlaid on image
-  - Gradient overlay for better text visibility
-  - Responsive design (mobile, tablet, desktop)
+  - Large banner at top of menu
+  - Restaurant name overlay
+  - Gradient for text visibility
+  - Responsive design (mobile/tablet/desktop)
+  - Fast loading (base64 embedded)
 
-### Storage
-- **Local File Storage**: Images saved to `/public/hero-images/`
-- **Metadata**: Firestore stores only filename and upload date
-- **No Storage Costs**: Uses Next.js public folder (free)
-- **Auto-Cleanup**: Old hero image deleted when new one uploaded
+### Storage Method
+- **Base64 Encoding**: Images converted to base64 strings
+- **Firestore Storage**: Saved directly in Firestore document
+- **No File System**: No files saved to server
+- **Consistent**: Same method as menu item images
+- **Simple**: Just one Firestore document
+
+## How It Works
+
+### Upload Process
+1. Admin selects image file
+2. ImageUpload component compresses image
+3. Converts to base64 string (data:image/jpeg;base64,...)
+4. Sends JSON to API: `{ image: "base64..." }`
+5. API saves to Firestore: `siteSettings/homepage-hero`
+6. Homepage displays base64 image
+
+### Technical Flow
+```
+User selects image
+    ↓
+ImageUpload component
+    ↓
+Compress & convert to base64
+    ↓
+Send JSON to /api/hero-image
+    ↓
+Save to Firestore
+    ↓
+Homepage fetches & displays
+```
+
+### Data Structure
+```javascript
+// Firestore: siteSettings/homepage-hero
+{
+  image: "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+  uploadedAt: "2025-01-15T10:30:00.000Z",
+  updatedAt: "2025-01-15T10:30:00.000Z"
+}
+```
+
+## Image Guidelines
+
+### Recommended Specs
+- **Dimensions**: 1920x600px (16:5 ratio)
+- **Orientation**: Landscape
+- **File Size**: Under 5MB (before compression)
+- **Formats**: JPG, PNG, GIF, WebP
+- **Quality**: High-resolution for best results
+
+### Content Tips
+- Use high-quality images
+- Avoid busy backgrounds (text overlay)
+- Consider brand colors
+- Test on mobile devices
+- Update seasonally
 
 ## Usage Instructions
 
-### Uploading a Hero Image
+### Uploading Hero Image
 1. Navigate to Admin Dashboard
-2. Click "Manage Hero Image" in Quick Actions
-3. Click "Select Image" or use the file input
-4. Choose an image file (JPG, PNG, or WebP)
-5. Preview the image
-6. Click "Upload Image"
-7. Wait for confirmation message
+2. Click "Manage Hero Image"
+3. Drag & drop or click to select image
+4. Preview appears automatically
+5. Click "Upload Hero Image"
+6. Wait for success message
+7. View on homepage
 
-### Image Guidelines
-- **Recommended Dimensions**: 1920x600px (16:5 ratio)
-- **Orientation**: Landscape works best
-- **File Size**: Maximum 10MB
-- **Formats**: JPG, PNG, WebP
-- **Quality**: High-resolution for best results
-- **Content**: Consider text overlay - avoid busy images with text
-
-### Deleting a Hero Image
+### Deleting Hero Image
 1. Go to Hero Image Manager
 2. Hover over current image
-3. Click the X button in top-right corner
+3. Click X button (top-right)
 4. Confirm deletion
-5. Image will be removed from server and homepage
+5. Image removed from Firestore
+
+### Viewing on Homepage
+1. Go to homepage
+2. Hero image displays at top
+3. Restaurant name overlaid
+4. Responsive on all devices
 
 ## Technical Details
 
 ### File Structure
 ```
-public/
-  └── hero-images/           # Hero images stored here
-      ├── .gitkeep
-      └── hero-1234567890.jpg  # Only 1 image at a time
-
 services/
-  └── heroImageService.js    # Firestore metadata operations
+  └── heroImageService.js       # Firestore operations
 
 pages/
-  ├── index.js               # Public menu with hero display
+  ├── index.js                  # Homepage with hero display
   └── admin/
-      └── hero-image.js      # Admin management page
+      └── hero-image.js         # Admin management
 
 pages/api/
-  └── hero-image.js          # API endpoints for upload/delete
-```
+  └── hero-image.js             # API endpoints (GET/POST/DELETE)
 
-### Data Storage
-- **Local Files**: Images stored in `/public/hero-images/` folder
-- **Firestore**: Only metadata stored in `siteSettings/homepage-hero`
-  ```json
-  {
-    "filename": "hero-1234567890.jpg",
-    "path": "/hero-images/hero-1234567890.jpg",
-    "uploadedAt": "2025-01-15T10:30:00.000Z",
-    "updatedAt": "2025-01-15T10:30:00.000Z"
-  }
-  ```
+components/
+  └── ImageUpload.js            # Reused from menu items
+
+utils/
+  └── imageUtils.js             # Compression utilities
+```
 
 ### API Endpoints
 
 #### GET /api/hero-image
-Fetch current hero image data
 ```javascript
 // Response
 {
-  "filename": "hero-1234567890.jpg",
-  "path": "/hero-images/hero-1234567890.jpg",
-  "uploadedAt": "ISO date string"
+  "image": "data:image/jpeg;base64,...",
+  "uploadedAt": "2025-01-15T10:30:00.000Z",
+  "updatedAt": "2025-01-15T10:30:00.000Z"
 }
 ```
 
 #### POST /api/hero-image
-Upload new hero image (multipart/form-data)
 ```javascript
-// Request: FormData with 'image' field
+// Request
+{
+  "image": "data:image/jpeg;base64,..."
+}
+
 // Response
 {
   "success": true,
   "data": {
-    "filename": "hero-1234567890.jpg",
-    "path": "/hero-images/hero-1234567890.jpg",
-    "uploadedAt": "ISO date string"
+    "image": "data:image/jpeg;base64,...",
+    "uploadedAt": "2025-01-15T10:30:00.000Z"
   }
 }
 ```
 
 #### DELETE /api/hero-image
-Delete current hero image
 ```javascript
 // Response
-{
-  "success": true
-}
+{ "success": true }
 ```
 
-## Homepage UI Enhancements
+## Advantages of Base64 Storage
 
-### Hero Section Design
-- **Height**: 
-  - Mobile: 192px (12rem)
-  - Tablet: 256px (16rem)  
-  - Desktop: 288px (18rem)
-- **Image**: Full width, object-fit cover
-- **Overlay**: Black gradient (40% → 20% → transparent)
-- **Text**: Centered, white with drop shadow
-- **Restaurant Name**: Large, bold heading
-- **Description**: Smaller text below name
-
-### Without Hero Image
-If no hero image is uploaded, the homepage displays normally without the hero section, starting with the MenuHeader component.
-
-## Advantages of Local Storage
-
-### Cost Benefits
-- ✅ **No Firebase Storage Costs**: Free tier sufficient
-- ✅ **No Storage Quotas**: Unlimited on your server
-- ✅ **Simple Architecture**: No external dependencies
+### Cost & Simplicity
+✅ No Firebase Storage costs  
+✅ No storage quotas  
+✅ No storage security rules  
+✅ Consistent with menu items  
+✅ Simple architecture  
 
 ### Performance
-- ✅ **Faster Loading**: No Firebase CDN latency
-- ✅ **Direct Access**: Served from same domain
-- ✅ **Browser Caching**: Automatic caching
+✅ Embedded in document  
+✅ Single database query  
+✅ No separate file fetch  
+✅ Fast loading  
+✅ Browser caching  
 
-### Simplicity
-- ✅ **No Storage Rules**: No Firebase config needed
-- ✅ **Easy Backup**: Just copy /public folder
-- ✅ **Simple Deployment**: Included in build
+### Development
+✅ No file upload complexity  
+✅ No file system operations  
+✅ Easy backup (Firestore export)  
+✅ Easy deployment  
+✅ No file permissions issues  
+
+## Comparison with Menu Items
+
+Both use identical storage method:
+
+| Feature | Hero Image | Menu Items |
+|---------|-----------|------------|
+| Storage | Firestore base64 | Firestore base64 |
+| Component | ImageUpload | ImageUpload |
+| Compression | imageUtils | imageUtils |
+| API | JSON body | JSON body |
+| Display | `<img src={base64}>` | `<img src={base64}>` |
+
+**Perfectly consistent!**
 
 ## Troubleshooting
 
-### Upload Fails
-- Check `/public/hero-images/` folder exists and is writable
-- Verify file is under 10MB
-- Check network connection
+### Image Not Uploading
 - Check browser console for errors
+- Verify file size under 5MB
+- Ensure valid image format
+- Check network connection
 
 ### Image Not Displaying
-- Verify file exists in `/public/hero-images/`
-- Check Firestore document has correct path
+- Verify Firestore document exists
+- Check browser console
 - Clear browser cache
-- Check file permissions
+- Restart dev server
 
-### File Too Large Error
-- Compress image before uploading
-- Use online tools (TinyPNG, Compressor.io)
-- Recommended: Keep under 2MB for faster loading
+### Image Too Large
+- Use online compression (TinyPNG)
+- Reduce dimensions before upload
+- Use JPEG instead of PNG
+- Optimize in image editor
+
+### Slow Upload
+- Compress image first
+- Check internet speed
+- Reduce image dimensions
+- Use smaller file format
 
 ## Best Practices
 
 ### Image Optimization
-1. **Compress images** before uploading
-2. **Use modern formats** (WebP when possible)
-3. **Optimize dimensions** (1920x600 recommended)
-4. **Test on mobile** to ensure readability
+1. Compress before upload
+2. Use appropriate dimensions
+3. Choose right format (JPEG for photos)
+4. Test on mobile first
+5. Keep file size reasonable
 
-### Content Considerations
-1. **Keep text minimal** - hero should be visual
-2. **High contrast** for text visibility
-3. **Consider brand colors** for cohesive design
-4. **Update seasonally** for freshness
+### Content Strategy
+1. Update seasonally
+2. High contrast for text
+3. Brand-consistent colors
+4. Mobile-friendly composition
+5. Professional quality
 
-### Deployment
-- Hero images are included in build/deployment
-- Commit `/public/hero-images/` to git if you want images in version control
-- Or add to `.gitignore` if images change frequently
+### Performance
+- Images auto-compressed to 400x400 max
+- JPEG quality set to 80%
+- Base64 embedded = fast display
+- Single Firestore query
+- Browser caches automatically
 
 ## Backup & Recovery
 
-### Manual Backup
-Copy the entire `/public/hero-images/` folder to backup location
+### Backup
+Export Firestore data:
+```bash
+# Firebase Console → Firestore → Export
+# Or use Firebase CLI
+firebase firestore:export backup/
+```
 
 ### Restore
-Copy backed up files back to `/public/hero-images/`
+Import Firestore data:
+```bash
+firebase firestore:import backup/
+```
 
-### Migration
-To move to different server, copy `/public/hero-images/` folder
+### Manual Backup
+1. Go to Firestore Console
+2. Open `siteSettings/homepage-hero`
+3. Copy `image` field value
+4. Save to text file
+
+## Migration Notes
+
+### From File Storage (Old)
+If upgrading from file-based storage:
+1. Old images in `/public/hero-images/` not needed
+2. Run `cleanup-hero-image.bat` to remove
+3. Upload image through admin interface
+4. New image saved to Firestore
+
+### Data Format Change
+```javascript
+// Old format (file path)
+{
+  filename: "hero-1234567890.jpg",
+  path: "/hero-images/hero-1234567890.jpg"
+}
+
+// New format (base64)
+{
+  image: "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
+}
+```
 
 ## Limitations
+
 - Single hero image only (by design)
-- Manual file cleanup if you need to free space
-- No automatic image optimization (compress before upload)
+- 5MB file size limit (before compression)
+- Compressed to 400x400 max (can be adjusted)
+- No image cropping tool (yet)
+- No scheduled changes (yet)
+
+## Future Enhancements
+
+Potential features:
+- Multiple hero images (carousel)
+- Image cropping interface
+- Scheduled hero images
+- Different images per device
+- Text position customization
+- Filters and effects
+- A/B testing support
 
 ## Support
-For issues or questions:
-1. Check `/public/hero-images/` folder permissions
-2. Review browser console errors  
-3. Verify Firestore connection
-4. Check file size limits
+
+### Check These First
+1. Browser console errors
+2. Network tab in DevTools
+3. Firestore Console data
+4. Server console logs
+
+### Common Issues
+- **405 Error**: Old API code - refresh browser
+- **500 Error**: Check Firestore permissions
+- **No display**: Verify base64 string exists
+- **Slow**: Compress image before upload
+
+### Get Help
+1. Check browser console
+2. Check server console
+3. Verify Firestore document
+4. Test with small image first
 
 ---
 
-**Created**: January 2025  
-**Version**: 2.0 (Local Storage)  
-**Status**: Production Ready (Free Tier Friendly)
+**Version**: 3.0 (Base64 Storage)  
+**Updated**: January 2025  
+**Status**: Production Ready  
+**Storage**: Firestore (base64) - Same as menu items!
