@@ -6,8 +6,8 @@ export default function App({ Component, pageProps }) {
   return (
     <AuthProvider>
       <Head>
-        <title>Brew & Crepe - Menu</title>
-        <meta name="description" content="Fresh, locally-sourced ingredients crafted into memorable dining experiences" />
+        <title>Menu</title>
+        <meta name="description" content="" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

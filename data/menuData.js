@@ -1,7 +1,7 @@
 export const menuData = {
   restaurant: {
     name: "Brew & Crepe",
-    description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
+    description: "",
     location: "Downtown District"
   },
   mainCategories: [
