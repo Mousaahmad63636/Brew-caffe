@@ -75,8 +75,14 @@ export default function HeroImageManager() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        let errorMessage = 'Upload failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (jsonErr) {
+          errorMessage = `Upload failed with status ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -89,7 +95,7 @@ export default function HeroImageManager() {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Upload error:', err);
-      setError(err.message);
+      setError(err.message || 'Upload failed');
     } finally {
       setUploading(false);
     }
