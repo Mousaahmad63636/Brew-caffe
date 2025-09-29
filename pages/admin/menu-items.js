@@ -88,7 +88,7 @@ export default function MenuItems() {
   return (
     <AdminLayout title="Menu Items">
       <Head>
-        <title>Menu Items - Da Menuuu Brew Admin</title>
+        <title>Menu Items - Admin</title>
       </Head>
 
       <div className="space-y-6">

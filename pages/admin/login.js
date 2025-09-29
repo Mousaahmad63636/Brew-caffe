@@ -56,7 +56,7 @@ export default function AdminLogin() {
   return (
     <>
       <Head>
-        <title>Admin Login - Da Menuuu Brew</title>
+        <title>Admin Login</title>
       </Head>
       
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-menu-gray-50 to-menu-gray-100 py-12 px-4 sm:px-6 lg:px-8">

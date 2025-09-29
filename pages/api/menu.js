@@ -11,7 +11,7 @@ const transformMenuData = async (apiItems) => {
     if (categories.length === 0) {
       return {
         restaurant: {
-          name: "Da Menuuu Brew",
+          name: "Brew & Crepe",
           description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
           location: "Downtown District"
         },
@@ -75,7 +75,7 @@ const transformMenuData = async (apiItems) => {
 
     return {
       restaurant: {
-        name: "Da Menuuu Brew",
+        name: "Brew & Crepe",
         description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
         location: "Downtown District"
       },
@@ -86,7 +86,7 @@ const transformMenuData = async (apiItems) => {
     // Return empty structure on error
     return {
       restaurant: {
-        name: "Da Menuuu Brew",
+        name: "Brew & Crepe",
         description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
         location: "Downtown District"
       },
@@ -115,7 +115,7 @@ export default async function handler(req, res) {
     // Return fallback data on error
     res.status(200).json({
       restaurant: {
-        name: "Da Menuuu Brew",
+        name: "Brew & Crepe",
         description: "Fresh, locally-sourced ingredients crafted into memorable dining experiences",
         location: "Downtown District"
       },

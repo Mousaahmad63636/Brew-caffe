@@ -66,7 +66,7 @@ export default function AddMenuItem() {
   return (
     <AdminLayout title="Add New Menu Item">
       <Head>
-        <title>Add New Menu Item - Da Menuuu Brew Admin</title>
+        <title>Add New Menu Item - Brew & Crepe Admin</title>
       </Head>
 
       <div className="max-w-4xl mx-auto">

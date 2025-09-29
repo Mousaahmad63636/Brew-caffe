@@ -229,7 +229,7 @@ export default function HierarchicalCategories() {
   return (
     <AdminLayout title="Menu Categories">
       <Head>
-        <title>Menu Categories - Da Menuuu Brew Admin</title>
+        <title>Menu Categories - Brew & Crepe Admin</title>
       </Head>
 
       <div className="space-y-6">

@@ -48,7 +48,7 @@ export default function AdminDashboard() {
   return (
     <AdminLayout title="Dashboard">
       <Head>
-        <title>Admin Dashboard - Da Menuuu Brew</title>
+        <title>Admin Dashboard</title>
       </Head>
 
       <div className="space-y-6">

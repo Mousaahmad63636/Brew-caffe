@@ -106,7 +106,7 @@ export default function HeroImageManager() {
   return (
     <AdminLayout title="Hero Image">
       <Head>
-        <title>Hero Image Manager - Da Menuuu Brew</title>
+        <title>Hero Image Manager - Brew & Crepe</title>
       </Head>
 
       <div className="space-y-6">
@@ -187,6 +187,9 @@ export default function HeroImageManager() {
                 value={imageData}
                 onChange={setImageData}
                 label="Hero Image"
+                maxWidth={1920}
+                maxHeight={1080}
+                quality={0.92}
               />
 
               {/* Upload Button */}
@@ -219,7 +222,7 @@ export default function HeroImageManager() {
                   <li>• Landscape orientation works best</li>
                   <li>• File size must be under 5MB</li>
                   <li>• Supported formats: JPG, PNG, GIF, WebP</li>
-                  <li>• Image is automatically compressed for fast loading</li>
+                  <li>• High quality compression (1920px, 92% quality)</li>
                 </ul>
               </div>
             </div>

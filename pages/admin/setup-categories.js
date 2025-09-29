@@ -37,7 +37,7 @@ export default function SetupCategories() {
   return (
     <AdminLayout title="Setup Categories">
       <Head>
-        <title>Setup Categories - Da Menuuu Brew Admin</title>
+        <title>Setup Categories - Brew & Crepe Admin</title>
       </Head>
 
       <div className="max-w-2xl mx-auto">

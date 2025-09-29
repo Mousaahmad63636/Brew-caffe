@@ -120,7 +120,7 @@ If categories don't exist, API returns:
 ```json
 {
   "restaurant": {
-    "name": "Da Menuuu Brew",
+    "name": "Brew & Crepe",
     "description": "Fresh, locally-sourced ingredients...",
     "location": "Downtown District"
   },

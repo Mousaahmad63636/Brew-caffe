@@ -1,7 +1,15 @@
 import { useState, useRef } from 'react';
 import { compressImage, validateImageFile } from '../utils/imageUtils';
 
-export default function ImageUpload({ value, onChange, label = "Image", className = "" }) {
+export default function ImageUpload({ 
+  value, 
+  onChange, 
+  label = "Image", 
+  className = "",
+  maxWidth = 400,
+  maxHeight = 400,
+  quality = 0.8
+}) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [errors, setErrors] = useState([]);
@@ -19,7 +27,7 @@ export default function ImageUpload({ value, onChange, label = "Image", classNam
     setIsProcessing(true);
     
     try {
-      const compressedImage = await compressImage(file);
+      const compressedImage = await compressImage(file, maxWidth, maxHeight, quality);
       onChange(compressedImage);
     } catch (error) {
       setErrors(['Failed to process image: ' + error.message]);
