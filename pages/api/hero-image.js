@@ -1,4 +1,4 @@
-import { getHeroImage, saveHeroImage, clearHeroImage } from '../../../services/heroImageService';
+import { getHeroImage, saveHeroImage, clearHeroImage } from '../../services/heroImageService';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
