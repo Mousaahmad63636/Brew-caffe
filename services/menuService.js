@@ -10,7 +10,7 @@ const transformMenuData = async (apiItems) => {
     if (categories.length === 0) {
       return {
         restaurant: {
-          name: "Brew & Crepe",
+          name: "",
           description: "",
           location: "Downtown District"
         },
@@ -74,7 +74,7 @@ const transformMenuData = async (apiItems) => {
 
     return {
       restaurant: {
-        name: "Brew & Crepe",
+        name: "",
         description: "",
         location: "Downtown District"
       },
@@ -85,7 +85,7 @@ const transformMenuData = async (apiItems) => {
     // Return empty structure on error
     return {
       restaurant: {
-        name: "Brew & Crepe",
+        name: "",
         description: "",
         location: "Downtown District"
       },

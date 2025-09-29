@@ -106,7 +106,7 @@ export default function HeroImageManager() {
   return (
     <AdminLayout title="Hero Image">
       <Head>
-        <title>Hero Image Manager - Brew & Crepe</title>
+        <title>Hero Image Manager - </title>
       </Head>
 
       <div className="space-y-6">

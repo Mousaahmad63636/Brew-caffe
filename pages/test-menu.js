@@ -34,7 +34,7 @@ export default function TestMenu() {
   return (
     <>
       <Head>
-        <title>Menu API Test - Brew & Crepe</title>
+        <title>Menu API Test - </title>
       </Head>
       
       <div className="min-h-screen bg-gray-50 py-8">
