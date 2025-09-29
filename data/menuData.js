@@ -1,6 +1,6 @@
 export const menuData = {
   restaurant: {
-    name: "Brew & Crepe",
+    name: "",
     description: "",
     location: "Downtown District"
   },
