@@ -1,5 +1,5 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../lib/firebaseClient';
+// Server-side hero image service (uses Firebase Admin)
+import { getFirestoreDb } from '../lib/firebase';
 
 const HERO_DOC_ID = 'homepage-hero';
 const HERO_COLLECTION = 'siteSettings';
@@ -10,10 +10,11 @@ const HERO_COLLECTION = 'siteSettings';
  */
 export async function getHeroImage() {
   try {
-    const docRef = doc(db, HERO_COLLECTION, HERO_DOC_ID);
-    const docSnap = await getDoc(docRef);
+    const db = getFirestoreDb();
+    const docRef = db.collection(HERO_COLLECTION).doc(HERO_DOC_ID);
+    const docSnap = await docRef.get();
 
-    if (docSnap.exists()) {
+    if (docSnap.exists) {
       return docSnap.data();
     }
     return null;
@@ -30,14 +31,16 @@ export async function getHeroImage() {
  */
 export async function saveHeroImage(imageBase64) {
   try {
-    const docRef = doc(db, HERO_COLLECTION, HERO_DOC_ID);
+    const db = getFirestoreDb();
+    const docRef = db.collection(HERO_COLLECTION).doc(HERO_DOC_ID);
+    
     const heroData = {
       image: imageBase64, // Store base64 string directly
       uploadedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
     
-    await setDoc(docRef, heroData, { merge: true });
+    await docRef.set(heroData, { merge: true });
     
     return heroData;
   } catch (error) {
@@ -51,8 +54,10 @@ export async function saveHeroImage(imageBase64) {
  */
 export async function clearHeroImage() {
   try {
-    const docRef = doc(db, HERO_COLLECTION, HERO_DOC_ID);
-    await setDoc(docRef, {
+    const db = getFirestoreDb();
+    const docRef = db.collection(HERO_COLLECTION).doc(HERO_DOC_ID);
+    
+    await docRef.set({
       image: null,
       uploadedAt: null,
       updatedAt: new Date().toISOString()

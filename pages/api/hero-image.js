@@ -1,4 +1,4 @@
-import { getHeroImage, saveHeroImage, clearHeroImage } from '../../../services/heroImageService';
+import { getHeroImage, saveHeroImage, clearHeroImage } from '../../services/heroImageService';
 
 export default async function handler(req, res) {
   const { method } = req;
