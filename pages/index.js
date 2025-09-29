@@ -10,6 +10,7 @@ export default function Menu() {
   const [activeSubcategory, setActiveSubcategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [menuData, setMenuData] = useState(null);
+  const [heroImage, setHeroImage] = useState(null);
   const [error, setError] = useState(null);
   const sectionRefs = useRef({});
 
@@ -19,6 +20,7 @@ export default function Menu() {
         setIsLoading(true);
         setError(null);
         
+        // Load menu data
         const response = await fetch('/api/menu');
         if (!response.ok) {
           throw new Error(`Failed to fetch menu: ${response.status}`);
@@ -26,6 +28,19 @@ export default function Menu() {
         
         const data = await response.json();
         setMenuData(data);
+        
+        // Load hero image
+        try {
+          const heroResponse = await fetch('/api/hero-image');
+          if (heroResponse.ok) {
+            const heroData = await heroResponse.json();
+            if (heroData.url) {
+              setHeroImage(heroData);
+            }
+          }
+        } catch (heroErr) {
+          console.log('No hero image found:', heroErr);
+        }
         
         // Set the first main category and its first subcategory as active by default
         if (data.mainCategories && data.mainCategories.length > 0) {
@@ -160,6 +175,28 @@ export default function Menu() {
       </Head>
       
       <div className="min-h-screen bg-menu-gray-50">
+        {/* Hero Image Section */}
+        {heroImage?.url && (
+          <div className="relative w-full h-48 md:h-64 lg:h-72 overflow-hidden">
+            <img
+              src={heroImage.url}
+              alt="Restaurant Hero"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center drop-shadow-lg mb-2">
+                {menuData.restaurant.name}
+              </h1>
+              {menuData.restaurant.description && (
+                <p className="text-sm md:text-base text-center max-w-2xl drop-shadow-md opacity-90">
+                  {menuData.restaurant.description}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         <MenuHeader restaurant={menuData.restaurant} />
         
         {/* Main Category Navigation */}
