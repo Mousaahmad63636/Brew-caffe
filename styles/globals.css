@@ -112,4 +112,27 @@
   .scale-102 {
     transform: scale(1.02);
   }
+  
+  /* Mobile category navigation improvements */
+  .category-nav-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  
+  .category-nav-item {
+    scroll-snap-align: start;
+    touch-action: manipulation;
+  }
+  
+  /* Ensure proper spacing on mobile */
+  @media (max-width: 640px) {
+    .category-nav-container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    .category-nav-item {
+      min-width: 80px;
+    }
+  }
 }

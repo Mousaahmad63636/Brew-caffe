@@ -101,7 +101,7 @@ const MainCategoryNav = ({ mainCategories, activeMainCategory, onMainCategoryCha
   return (
     <nav className="bg-white sticky top-0 z-20 shadow-lg border-b border-gray-200">
       <div className="px-3 py-4">
-        <div className="flex justify-center items-center space-x-3 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center space-x-2 overflow-x-auto scrollbar-hide pb-1 category-nav-container">
           {mainCategories.map((category) => {
             const categoryColors = getCategoryColors(category);
             const isActive = activeMainCategory === category.id;
@@ -111,7 +111,7 @@ const MainCategoryNav = ({ mainCategories, activeMainCategory, onMainCategoryCha
                 key={category.id}
                 onClick={() => onMainCategoryChange(category.id)}
                 onKeyDown={(e) => handleKeyDown(e, category.id)}
-                className={`px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 flex-1 max-w-24 border-2 ${
+                className={`px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 flex-shrink-0 min-w-fit border-2 category-nav-item ${
                   isActive
                     ? `${categoryColors.active} shadow-lg transform scale-105 focus:ring-white`
                     : `${categoryColors.inactive} hover:scale-102 focus:ring-gray-300`
