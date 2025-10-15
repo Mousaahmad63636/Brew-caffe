@@ -1,6 +1,7 @@
 import React from 'react';
+import Image from 'next/image';
 
-const MenuItem = ({ item }) => {
+const MenuItem = React.memo(({ item }) => {
   const getDietaryBadgeColor = (dietary) => {
     const colors = {
       vegetarian: 'bg-green-100 text-green-800',
@@ -32,14 +33,15 @@ const MenuItem = ({ item }) => {
     <div className="bg-white border-b border-menu-gray-200 p-4 relative">
       <div className="flex items-start space-x-3">
         <div className="relative flex-shrink-0">
-          <img
-            src={item.image}
+          <Image
+            src={item.image || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop'}
             alt={item.name}
+            width={64}
+            height={64}
             className="w-16 h-16 rounded-lg object-cover"
-            loading="lazy"
-            onError={(e) => {
-              e.target.src = 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop';
-            }}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+Rw="
+            priority={false}
           />
           {item.popular && (
             <div className="absolute -top-1 -right-1 bg-menu-accent-500 text-white px-1.5 py-0.5 rounded-full text-xs font-medium">
@@ -94,6 +96,6 @@ const MenuItem = ({ item }) => {
       </div>
     </div>
   );
-};
+});
 
 export default MenuItem;

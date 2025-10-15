@@ -1,11 +1,23 @@
 // Firestore service - server-side only
 import { getFirestoreDb, MENU_ITEMS_COLLECTION } from '../lib/firebase';
 
-// Fetch all menu items from Firestore
+// Cache for menu items to avoid repeated database calls
+let menuItemsCache = null;
+let cacheTimestamp = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Fetch all menu items from Firestore with caching
 export const fetchMenuItems = async () => {
   try {
+    // Check if we have valid cached data
+    if (menuItemsCache && cacheTimestamp && (Date.now() - cacheTimestamp < CACHE_DURATION)) {
+      return menuItemsCache;
+    }
+    
     const db = getFirestoreDb();
-    const snapshot = await db.collection(MENU_ITEMS_COLLECTION).get();
+    const snapshot = await db.collection(MENU_ITEMS_COLLECTION)
+      .orderBy('createdAt', 'desc') // Add ordering for better performance
+      .get();
     
     const items = [];
     snapshot.forEach(doc => {
@@ -15,11 +27,21 @@ export const fetchMenuItems = async () => {
       });
     });
     
+    // Update cache
+    menuItemsCache = items;
+    cacheTimestamp = Date.now();
+    
     return items;
   } catch (error) {
     console.error('Error fetching menu items:', error);
     throw new Error('Failed to fetch menu items from Firestore');
   }
+};
+
+// Clear cache when data is modified
+const clearCache = () => {
+  menuItemsCache = null;
+  cacheTimestamp = null;
 };
 
 // Add a new menu item
@@ -37,6 +59,9 @@ export const addMenuItem = async (item) => {
     
     // Use the formatted ID as the document ID
     await db.collection(MENU_ITEMS_COLLECTION).doc(item.id).set(formattedItem);
+    
+    // Clear cache to ensure fresh data on next fetch
+    clearCache();
     
     return { 
       id: item.id,
@@ -59,6 +84,9 @@ export const updateMenuItem = async (id, item) => {
     // Update in Firestore
     await db.collection(MENU_ITEMS_COLLECTION).doc(id).update(formattedItem);
     
+    // Clear cache to ensure fresh data on next fetch
+    clearCache();
+    
     return { 
       id,
       ...formattedItem
@@ -76,6 +104,9 @@ export const deleteMenuItem = async (id) => {
     
     // Delete from Firestore
     await db.collection(MENU_ITEMS_COLLECTION).doc(id).delete();
+    
+    // Clear cache to ensure fresh data on next fetch
+    clearCache();
     
     return { success: true };
   } catch (error) {

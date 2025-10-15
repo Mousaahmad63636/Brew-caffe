@@ -5,6 +5,9 @@ export default async function handler(req, res) {
 
   try {
     if (method === 'GET') {
+      // Set cache headers for hero images (longer cache since they change less frequently)
+      res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+      
       // Fetch current hero image
       const heroData = await getHeroImage();
       return res.status(200).json(heroData || { image: null });

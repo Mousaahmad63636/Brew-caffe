@@ -1,9 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
-import MenuHeader from '../components/MenuHeader';
-import MainCategoryNav from '../components/MainCategoryNav';
-import SubcategorySlider from '../components/SubcategorySlider';
-import MenuCategory from '../components/MenuCategory';
+import Image from 'next/image';
+import dynamic from 'next/dynamic';
+import LoadingSkeleton from '../components/LoadingSkeleton';
+
+// Dynamic imports for better code splitting
+const MenuHeader = dynamic(() => import('../components/MenuHeader'), {
+  loading: () => <div className="h-16 bg-white animate-pulse"></div>
+});
+
+const MainCategoryNav = dynamic(() => import('../components/MainCategoryNav'), {
+  loading: () => <div className="h-12 bg-white animate-pulse"></div>
+});
+
+const SubcategorySlider = dynamic(() => import('../components/SubcategorySlider'), {
+  loading: () => <div className="h-10 bg-white animate-pulse"></div>
+});
+
+const MenuCategory = dynamic(() => import('../components/MenuCategory'), {
+  loading: () => <div className="h-32 bg-white animate-pulse"></div>
+});
 
 export default function Menu() {
   const [activeMainCategory, setActiveMainCategory] = useState('');
@@ -20,36 +36,49 @@ export default function Menu() {
         setIsLoading(true);
         setError(null);
         
-        // Load menu data
-        const response = await fetch('/api/menu');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch menu: ${response.status}`);
+        // Load menu data and hero image in parallel
+        const [menuResponse, heroResponse] = await Promise.allSettled([
+          fetch('/api/menu', {
+            headers: {
+              'Cache-Control': 'max-age=300' // 5 minutes cache
+            }
+          }),
+          fetch('/api/hero-image', {
+            headers: {
+              'Cache-Control': 'max-age=3600' // 1 hour cache for images
+            }
+          })
+        ]);
+        
+        // Handle menu data
+        if (menuResponse.status === 'fulfilled' && menuResponse.value.ok) {
+          const data = await menuResponse.value.json();
+          setMenuData(data);
+          
+          // Set the first main category and its first subcategory as active by default
+          if (data.mainCategories && data.mainCategories.length > 0) {
+            const firstMainCategory = data.mainCategories[0];
+            setActiveMainCategory(firstMainCategory.id);
+            if (firstMainCategory.subcategories && firstMainCategory.subcategories.length > 0) {
+              setActiveSubcategory(firstMainCategory.subcategories[0].id);
+            }
+          }
+        } else {
+          throw new Error(`Failed to fetch menu: ${menuResponse.value?.status || 'Network error'}`);
         }
         
-        const data = await response.json();
-        setMenuData(data);
-        
-        // Load hero image
-        try {
-          const heroResponse = await fetch('/api/hero-image');
-          if (heroResponse.ok) {
-            const heroData = await heroResponse.json();
+        // Handle hero image (non-blocking)
+        if (heroResponse.status === 'fulfilled' && heroResponse.value.ok) {
+          try {
+            const heroData = await heroResponse.value.json();
             if (heroData.image) {
               setHeroImage(heroData);
             }
+          } catch (heroErr) {
+            console.log('No hero image found:', heroErr);
           }
-        } catch (heroErr) {
-          console.log('No hero image found:', heroErr);
         }
         
-        // Set the first main category and its first subcategory as active by default
-        if (data.mainCategories && data.mainCategories.length > 0) {
-          const firstMainCategory = data.mainCategories[0];
-          setActiveMainCategory(firstMainCategory.id);
-          if (firstMainCategory.subcategories && firstMainCategory.subcategories.length > 0) {
-            setActiveSubcategory(firstMainCategory.subcategories[0].id);
-          }
-        }
       } catch (err) {
         console.error('Failed to load menu data:', err);
         setError(err.message);
@@ -88,14 +117,7 @@ export default function Menu() {
   const currentSubcategories = currentMainCategory?.subcategories || [];
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-menu-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-menu-accent-500 mx-auto mb-4"></div>
-          <p className="text-menu-gray-600">Loading menu...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   if (error) {
@@ -178,10 +200,14 @@ export default function Menu() {
         {/* Hero Image Section */}
         {heroImage?.image && (
           <div className="relative w-full h-48 md:h-64 lg:h-72 overflow-hidden">
-            <img
+            <Image
               src={heroImage.image}
               alt="Restaurant Hero"
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              priority
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+Rw="
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4">

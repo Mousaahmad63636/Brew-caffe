@@ -1,9 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  swcMinify: true, // Use SWC for faster minification
+  compress: true, // Enable gzip compression
+  poweredByHeader: false, // Remove X-Powered-By header for security
   images: {
     domains: ['via.placeholder.com', 'picsum.photos', 'images.unsplash.com'],
     formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 3600, // Cache images for 1 hour
+    dangerouslyAllowSVG: false,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
+  experimental: {
+    optimizeCss: true, // Enable CSS optimization
+    scrollRestoration: true, // Better scroll restoration
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

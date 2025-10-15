@@ -101,6 +101,9 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Set cache headers for better performance
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    
     // Fetch raw menu items
     const menuItems = await fetchMenuItems();
     
