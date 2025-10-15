@@ -29,6 +29,13 @@ export const categoriesService = {
   async getAllCategories() {
     try {
       const db = getFirestoreDb();
+      
+      // Return empty array if database is not available (during build)
+      if (!db) {
+        console.warn('Database not available, returning empty categories');
+        return [];
+      }
+      
       const snapshot = await db.collection(CATEGORIES_COLLECTION).get();
       
       const categories = [];

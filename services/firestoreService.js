@@ -15,6 +15,13 @@ export const fetchMenuItems = async () => {
     }
     
     const db = getFirestoreDb();
+    
+    // Return empty array if database is not available (during build)
+    if (!db) {
+      console.warn('Database not available, returning empty menu items');
+      return [];
+    }
+    
     const snapshot = await db.collection(MENU_ITEMS_COLLECTION)
       .orderBy('createdAt', 'desc') // Add ordering for better performance
       .get();

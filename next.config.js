@@ -12,7 +12,6 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {
-    optimizeCss: true, // Enable CSS optimization
     scrollRestoration: true, // Better scroll restoration
   },
   webpack: (config, { isServer }) => {
