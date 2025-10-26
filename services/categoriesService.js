@@ -135,12 +135,21 @@ export const categoriesService = {
     try {
       const db = getFirestoreDb();
       
+      // Get existing category data to preserve fields not being updated
+      const existingCategory = await this.getCategoryById(categoryId);
+      if (!existingCategory) {
+        throw new Error('Category not found');
+      }
+      
       // Ensure subcategories have proper IDs if they're being updated
       if (updates.subcategories) {
         updates.subcategories = updates.subcategories.map(sub => ({
           ...sub,
           id: sub.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
         }));
+      } else {
+        // Preserve existing subcategories if not being updated
+        updates.subcategories = existingCategory.subcategories || [];
       }
       
       const updateData = {

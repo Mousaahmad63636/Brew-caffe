@@ -5,8 +5,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to Firebase login
-    router.push('/admin/firebase-login');
+    // Redirect to admin login
+    router.push('/admin/login');
   }, [router]);
 
   return (

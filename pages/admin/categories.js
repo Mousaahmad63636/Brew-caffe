@@ -62,12 +62,11 @@ export default function HierarchicalCategories() {
     e.preventDefault();
     
     try {
-      const categoryData = {
-        ...mainCategoryForm,
-        subcategories: []
-      };
-      
       if (editingMain) {
+        // For updates, don't override subcategories - let the service preserve them
+        const categoryData = {
+          ...mainCategoryForm
+        };
         const response = await fetch(`/api/categories/${editingMain.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -75,6 +74,11 @@ export default function HierarchicalCategories() {
         });
         if (!response.ok) throw new Error('Failed to update main category');
       } else {
+        // For new categories, initialize with empty subcategories
+        const categoryData = {
+          ...mainCategoryForm,
+          subcategories: []
+        };
         const response = await fetch('/api/categories', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
