@@ -3,6 +3,17 @@ import { getFirestoreDb } from '../lib/firebase';
 
 const CATEGORIES_COLLECTION = 'categories';
 
+// Cache for categories to avoid repeated database calls
+let categoriesCache = null;
+let cacheTimestamp = null;
+const CACHE_DURATION = 30 * 1000; // 30 seconds
+
+// Clear cache when data is modified
+const clearCache = () => {
+  categoriesCache = null;
+  cacheTimestamp = null;
+};
+
 // Data structure for categories:
 // {
 //   id: "pizza",
@@ -28,6 +39,11 @@ export const categoriesService = {
   // Fetch all categories with subcategories
   async getAllCategories() {
     try {
+      // Check if we have valid cached data
+      if (categoriesCache && cacheTimestamp && (Date.now() - cacheTimestamp < CACHE_DURATION)) {
+        return categoriesCache;
+      }
+      
       const db = getFirestoreDb();
       
       // Return empty array if database is not available (during build)
@@ -49,6 +65,10 @@ export const categoriesService = {
       
       // Sort by order field, defaulting to 0 if not set
       categories.sort((a, b) => (a.order || 0) - (b.order || 0));
+      
+      // Update cache
+      categoriesCache = categories;
+      cacheTimestamp = Date.now();
       
       return categories;
     } catch (error) {
@@ -93,6 +113,9 @@ export const categoriesService = {
       
       const docRef = await db.collection(CATEGORIES_COLLECTION).add(category);
       
+      // Clear cache to ensure fresh data on next fetch
+      clearCache();
+      
       return {
         id: docRef.id,
         ...category
@@ -114,6 +137,9 @@ export const categoriesService = {
       
       await db.collection(CATEGORIES_COLLECTION).doc(categoryId).update(updateData);
       
+      // Clear cache to ensure fresh data on next fetch
+      clearCache();
+      
       return await this.getCategoryById(categoryId);
     } catch (error) {
       console.error('Error updating category:', error);
@@ -129,6 +155,9 @@ export const categoriesService = {
         active: false,
         updatedAt: new Date()
       });
+      
+      // Clear cache to ensure fresh data on next fetch
+      clearCache();
       
       return true;
     } catch (error) {

@@ -4,7 +4,7 @@ import { getFirestoreDb, MENU_ITEMS_COLLECTION } from '../lib/firebase';
 // Cache for menu items to avoid repeated database calls
 let menuItemsCache = null;
 let cacheTimestamp = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 30 * 1000; // 30 seconds
 
 // Fetch all menu items from Firestore with caching
 export const fetchMenuItems = async () => {

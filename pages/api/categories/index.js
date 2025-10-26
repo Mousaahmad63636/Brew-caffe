@@ -7,6 +7,9 @@ export default async function handler(req, res) {
     switch (method) {
       case 'GET':
         try {
+          // Set short cache headers (30 seconds) for better performance while allowing quick updates
+          res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+          
           const categories = await categoriesService.getAllCategories();
           res.status(200).json(categories);
         } catch (dbError) {
@@ -17,6 +20,11 @@ export default async function handler(req, res) {
         break;
 
       case 'POST':
+        // Set no-cache headers for POST responses
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
         const newCategory = await categoriesService.createCategory(req.body);
         res.status(201).json(newCategory);
         break;

@@ -5,8 +5,8 @@ export default async function handler(req, res) {
 
   try {
     if (method === 'GET') {
-      // Set cache headers for hero images (longer cache since they change less frequently)
-      res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+      // Set short cache headers (30 seconds) for better performance while allowing quick updates
+      res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
       
       // Fetch current hero image
       const heroData = await getHeroImage();
@@ -14,6 +14,11 @@ export default async function handler(req, res) {
     }
 
     if (method === 'POST') {
+      // Set no-cache headers for POST responses
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
       // Save hero image (base64 string)
       const { image } = req.body;
 
@@ -36,6 +41,11 @@ export default async function handler(req, res) {
     }
 
     if (method === 'DELETE') {
+      // Set no-cache headers for DELETE responses
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
       // Delete hero image
       await clearHeroImage();
       return res.status(200).json({ success: true });
