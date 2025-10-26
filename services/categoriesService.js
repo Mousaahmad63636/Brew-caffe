@@ -63,8 +63,12 @@ export const categoriesService = {
         });
       });
       
-      // Sort by order field, defaulting to 0 if not set
-      categories.sort((a, b) => (a.order || 0) - (b.order || 0));
+      // Sort by order field, defaulting to 999 for undefined order (puts them at the end)
+      categories.sort((a, b) => {
+        const orderA = a.order !== undefined ? a.order : 999;
+        const orderB = b.order !== undefined ? b.order : 999;
+        return orderA - orderB;
+      });
       
       // Update cache
       categoriesCache = categories;
@@ -130,6 +134,15 @@ export const categoriesService = {
   async updateCategory(categoryId, updates) {
     try {
       const db = getFirestoreDb();
+      
+      // Ensure subcategories have proper IDs if they're being updated
+      if (updates.subcategories) {
+        updates.subcategories = updates.subcategories.map(sub => ({
+          ...sub,
+          id: sub.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
+        }));
+      }
+      
       const updateData = {
         ...updates,
         updatedAt: new Date()

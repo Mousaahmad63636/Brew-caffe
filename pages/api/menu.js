@@ -70,8 +70,8 @@ const transformMenuData = async (apiItems) => {
       };
     });
 
-    // Sort categories by order
-    mainCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
+    // Categories are already sorted in the service, no need to sort again here
+    // mainCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
     return {
       restaurant: {

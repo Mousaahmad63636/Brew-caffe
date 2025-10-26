@@ -15,11 +15,21 @@ export default async function handler(req, res) {
         break;
 
       case 'PUT':
+        // Set no-cache headers for PUT responses
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
         const updatedCategory = await categoriesService.updateCategory(id, req.body);
         res.status(200).json(updatedCategory);
         break;
 
       case 'DELETE':
+        // Set no-cache headers for DELETE responses
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
         await categoriesService.deleteCategory(id);
         res.status(204).end();
         break;
